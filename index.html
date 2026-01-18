@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v162 統刪與圖例最終修正版)</title>
+    <title>中央政府總預算觀測站 (v165 最終完整功能整合版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -436,47 +436,38 @@
         .jump-btn { background: var(--secondary-color); color: white; border: none; padding: 8px 18px; border-radius: 25px; cursor: pointer; font-size: 0.95rem; margin-top: 10px; display: inline-flex; align-items: center; transition: 0.3s; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
         .jump-btn:hover { transform: translateY(-2px); box-shadow: 3px 3px 8px rgba(0,0,0,0.3); background-color: #0a7ea6; }
         .jump-btn::after { content: ' ➔'; margin-left: 5px; }
+        
+        /* [v163] Branch Plan Styles */
+        .branch-tag {
+            border: 2px solid var(--border-color);
+            background: #fff;
+            color: #555;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: 0.2s;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .branch-tag:hover {
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+        .branch-tag.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            box-shadow: 0 2px 5px rgba(8, 103, 136, 0.3);
+        }
 
         .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(248, 248, 248, 0.95); z-index: 999; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { border: 8px solid #e0e0e0; border-top: 8px solid var(--accent-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .error-message { text-align:center; padding: 20px; color: #E74C3C; background: #ffeaea; border-radius: 10px; border: 1px solid #E74C3C; max-width: 80%; }
         .demo-mode-badge { background: var(--warning-color); color: var(--primary-color); padding: 8px 16px; border-radius: 50px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none; }
-        
-        /* [v142] RWD Optimization */
-        @media (max-width: 768px) {
-            header { flex-direction: column; gap: 15px; padding: 1rem; } 
-            header nav { width: 100%; justify-content: center; flex-wrap: wrap; } 
-            header nav button { flex: 1; min-width: 80px; text-align: center; } 
-            main { padding: 1rem; }
-            .btn-group { flex-direction: column; gap: 15px; }
-            .big-btn { width: 100%; }
-            .chart-container { height: 250px; }
-            
-            /* Ranking: Force 1 column on mobile */
-            .ranking-container { grid-template-columns: 1fr !important; gap: 20px; }
-            
-            .modal-charts-grid { grid-template-columns: 1fr; }
-            .search-input-lg { font-size: 16px; padding: 12px 20px; }
-            .project-block { grid-template-columns: 1fr; gap: 10px; border-left-width: 6px; }
-            .pb-amount { text-align: left; margin-left: 0; font-size: 1.3rem; }
-            .legislator-grid { grid-template-columns: 1fr; }
-            .leg-modal-body { padding: 20px; }
-            .bill-container { padding: 5% 10%; border-width: 1px; }
-            .modal-header-area { padding: 20px; }
-            .modal-body-area { padding: 20px; }
-            
-            /* Ministry Dashboard: Vertical Stack */
-            .ministry-dashboard { grid-template-columns: 1fr !important; gap: 20px; }
-            .ministry-filters { flex-direction: column; }
-            
-            /* Typography on Mobile */
-            .article-title { font-size: 1.8rem; }
-            .article-text { font-size: 1rem; }
-            
-            /* Fix Content Blocks */
-            .content-block { margin-top: 2rem; margin-bottom: 4rem; min-height: auto; }
-        }
     </style>
 </head>
 <body>
@@ -517,8 +508,29 @@
                         </div>
                         <button id="toggle-desc-btn" class="toggle-btn" onclick="toggleDesc()">展開閱讀全文</button>
                     </div>
+                    
                     <div class="modal-charts-grid">
-                        <div class="mini-chart-box"><h4>分支計畫</h4><div style="height:250px;"><canvas id="chartDetailBar"></canvas></div></div>
+                        <div class="mini-chart-box" style="grid-column: 1 / -1;">
+                            <h4>分支計畫詳情</h4>
+                            <div id="branch-btn-container" class="btn-group" style="margin-bottom:15px; flex-wrap: wrap; gap:10px; justify-content:center; margin-top:10px;"></div>
+                            
+                            <div id="branch-detail-display" style="display:none; margin-top:20px;">
+                                <div style="height:80px; margin-bottom:20px; max-width:600px; margin-left:auto; margin-right:auto;">
+                                    <canvas id="chartBranchRatio"></canvas>
+                                </div>
+                                <div style="background:var(--bg-color); padding:20px; border-radius:12px; text-align:left; border:1px solid var(--border-color);">
+                                    <strong style="color:var(--secondary-color); font-size:1rem; display:block; margin-bottom:8px;">📝 該分支說明：</strong>
+                                    <div id="b-desc-container" class="desc-container">
+                                        <span id="b-desc-text" style="color:#444; font-size:0.95rem;"></span>
+                                        <div class="desc-gradient"></div>
+                                    </div>
+                                    <button id="b-toggle-btn" class="toggle-btn" onclick="toggleBranchDesc()" style="padding:6px; font-size:0.9rem; margin-top:10px;">展開說明</button>
+                                </div>
+                            </div>
+                            
+                            <div id="branch-no-data" style="color:#999; padding:20px; display:none;">無分支計畫資料</div>
+                        </div>
+
                         <div class="mini-chart-box"><h4>用途比例</h4><div style="height:250px;"><canvas id="chartDetailPie"></canvas></div></div>
                     </div>
                     
@@ -647,6 +659,7 @@
                     <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                 </div>
             </div>
+
             <div class="content-block">
                 <div class="article-text">
                     <p>行政院會114年8月21日通過「115年度中央政府總預算案暨附屬單位預算及綜計表」，並於9月送入立法院。</p>
@@ -692,13 +705,17 @@
                     <p>另外，我們也整理了今年總預算案編列情形提供讀者參考。</p>
                     <p>115年度總預算案受新版財劃法釋出財源給地方的影響，歲入共編列新台幣2兆8623億元，較114年度大幅減少3025億元。</p>
                     <p>歲出編列則為3兆350億元，較114年度預算增加1100億，是近10年總預算案歲出編列第2高的金額。</p>
-                    <p>當中占比最多8318億元用於社會福利、5566億元用於教育科學文化、5488億元用於國防、4275億元用於經濟發展。其中國防支出增加最多、教育科學文化支出最少。</p>
+                    <p>歲出為各項工作計畫的支出，但不包含償還債務；歲入則是為支應個工作計畫所籌措的財源，不包含舉債和前一年度歲計剩餘。</p>
                 </div>
                 <div class="card">
                     <h3>歷年預算案歲出比較</h3>
                     <div class="chart-container"><canvas id="chartYearly"></canvas></div>
                 </div>
-                
+
+                <div class="article-text">
+                    <p>歲出編列時會依據其業務性質做科目分類，也就是「政事別」。根據「歲出政事別科目歸類原則與範圍」規定，政事別科目區分為大分類、中分類、業務計畫3個層次，其中大分類包括一般政務、國防、經濟發展、教育科學文化等9大項目。</p>
+                    <p>今年占比最多8318億元用於社會福利、5566億元用於教育科學文化、5488億元用於國防、4275億元用於經濟發展。其中國防支出增加最多、教育科學文化支出最少。</p>
+                </div>                
                 <div class="card">
                     <h3>115 年度預算案分配概況</h3>
                     <div class="bill-container">
@@ -758,7 +775,6 @@
                     </div>
                 </div>
             </div>
-
         </section>
 
         <section id="page-budget" class="page-section">
@@ -789,14 +805,6 @@
         </section>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <p><strong>資料來源：</strong>各機關網頁、立法院議事及公報網</p>
-            <p><strong>免責聲明：</strong>網站目前為測試版，本網站計算內容為試算，正式資料依主計總處公布為主</p>
-            <p style="margin-top: 10px; font-size: 0.8rem; color: #999;">&copy; 2025 中央政府總預算觀測站</p>
-        </div>
-    </footer>
-
     <script>
         // --- 1. Constants & Variables ---
         const FILE_ID = '1Qft9FVm9XtT3SVzbgX1NSduPP0sBR3CdGqiUsm-Mmrs'; 
@@ -809,15 +817,11 @@
             'page-d': getQueryUrl('1462843513') 
         };
 
-        // [v153] Updated Mock Data for new table structure
-        const MOCK_DATA_A=[{'計畫編號':'TEST001','所屬部會':'行政院','主管機關':'國防部','計畫名稱':'國防自主強化計畫 (測試資料)','預算金額':'5000000000','114年預算金額':'4800000000','政事別':'國防','工作內容':'測試說明。','分支計畫':'潛艦國造:3000000000|無人機研發:2000000000','用途比例':'人事費:50000000|業務費:30000000|設備及投資:4000000000|獎補助費:10000000|債務費:0|預備金:0'}];
+        // Mock Data
+        const MOCK_DATA_A=[{'計畫編號':'TEST001','所屬部會':'行政院','主管機關':'國防部','計畫名稱':'國防自主強化計畫 (測試資料)','預算金額':'5000000000','114年預算金額':'4800000000','政事別':'國防','工作內容':'測試說明。','分支計畫':'潛艦國造:3000000000:這是潛艦的詳細說明|無人機研發:2000000000:這是無人機的詳細說明','用途比例':'人事費:50000000|業務費:30000000|設備及投資:4000000000|獎補助費:10000000|債務費:0|預備金:0'}];
         const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','院會表決刪減':'500000','院會表決凍結':'30000000','通案刪減':'100000','通案凍結':'0','提案紀錄':'王小明:凍結:人事費:理由A','資料類型':'計畫'}];
         const MOCK_DATA_C=[{'委員姓名':'王小明','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#設備採購#100萬#理由B#TEST001#通過'}];
-        const MOCK_DATA_D=[
-            {'日期':'113/08/22', '事項':'行政院通過總預算案', '連結':''},
-            {'日期':'113/08/30', '事項':'預算案送立法院審議', '連結':''},
-            {'日期':'113/11/08', '事項':'付委審查', '連結':''}
-        ];
+        const MOCK_DATA_D=[{'日期':'113/08/22', '事項':'行政院通過總預算案', '連結':''},{'日期':'113/08/30', '事項':'預算案送立法院審議', '連結':''},{'日期':'113/11/08', '事項':'付委審查', '連結':''}];
         
         let allDataPageA = [], allDataPageB = [], allDataPageB_Plans = [], allDataPageC = [], allDataPageD = []; 
         let mainChartsRendered = false;
@@ -833,7 +837,8 @@
         let chartModalPlanRatio = null;
         let chartModalCatRatio = null;
         let chartModalAgencyReview = null;
-        let chartBarA = null, chartPieA = null, chartB1 = null, chartB2 = null;
+        let chartBranchRatio = null; // [v163] New Chart Instance
+        let chartPieA = null, chartB1 = null, chartB2 = null;
         
         let chartMilMndRatio = null, chartMilUnitRatio = null, chartMilMndCat = null, chartMilUnitCat = null;
 
@@ -887,17 +892,11 @@
             }
         };
 
-        // --- 3. [CRITICAL] DEFINE CHART & RENDER FUNCTIONS FIRST ---
+        // --- 3. Chart & Render Functions ---
         
+        // [v163] Completely Overhauled for Interactive Branch Plans
         function renderDetailChartsA(row){
-            let subLabels=[],subData=[];
-            let branchString=row['分支計畫']||'';
-            if(branchString&&branchString.includes(':')){
-                branchString.split('|').forEach(item=>{
-                    let parts=item.split(':');
-                    if(parts.length===2){subLabels.push(parts[0].trim());subData.push(parseMoney(parts[1].trim()))}
-                })
-            }
+            // 1. Pie Chart (Usage Ratio) - Kept mostly same
             let pieLabels=[],pieData=[];
             let usageString=row['用途比例']||'';
             if(usageString&&usageString.includes(':')){
@@ -906,14 +905,110 @@
                     if(parts.length===2){pieLabels.push(parts[0].trim());pieData.push(parseInt(parts[1].trim()))}
                 })
             }
-            
-            const ctxBar=document.getElementById('chartDetailBar').getContext('2d');
-            if(chartBarA) chartBarA.destroy();
-            chartBarA=new Chart(ctxBar,{type:'bar',data:{labels:subLabels,datasets:[{label:'金額',data:subData,backgroundColor:'#086788',borderRadius:4}]},options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:tooltipCurrencyCallback}}});
-            
             const ctxPie=document.getElementById('chartDetailPie').getContext('2d');
             if(chartPieA) chartPieA.destroy();
             chartPieA=new Chart(ctxPie,{type:'pie',data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:['#E74C3C','#F0C808','#086788','#2ECC71','#9B59B6']}]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:tooltipCurrencyCallback}}});
+
+            // 2. Branch Plans (New Logic)
+            const btnContainer = document.getElementById('branch-btn-container');
+            const detailDisplay = document.getElementById('branch-detail-display');
+            const noDataMsg = document.getElementById('branch-no-data');
+            const totalProjectBudget = parseMoney(row['預算金額']);
+
+            btnContainer.innerHTML = ''; // Clear previous buttons
+            
+            let branchString = row['分支計畫'] || '';
+            let branches = [];
+
+            if(branchString && branchString.includes(':')){
+                branchString.split('|').forEach(item => {
+                    // New Format: Name:Amount:Desc
+                    let parts = item.split(':');
+                    if(parts.length >= 2){
+                        branches.push({
+                            name: parts[0].trim(),
+                            amount: parseMoney(parts[1].trim()),
+                            desc: parts[2] ? parts[2].trim() : '無詳細說明'
+                        });
+                    }
+                });
+            }
+
+            if (branches.length === 0) {
+                detailDisplay.style.display = 'none';
+                noDataMsg.style.display = 'block';
+                return;
+            }
+
+            noDataMsg.style.display = 'none';
+            detailDisplay.style.display = 'block';
+
+            // Generate Buttons
+            branches.forEach((branch, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'branch-tag';
+                btn.innerText = branch.name;
+                btn.onclick = () => showBranchDetail(index, branch, totalProjectBudget, branches);
+                btnContainer.appendChild(btn);
+            });
+
+            // Initialize with the first branch
+            showBranchDetail(0, branches[0], totalProjectBudget, branches);
+        }
+
+        // [v163] New Helper Function for Branch Switching
+        function showBranchDetail(index, branch, total, allBranches) {
+            // Update Active Button
+            const btns = document.getElementById('branch-btn-container').children;
+            for(let btn of btns) btn.classList.remove('active');
+            if(btns[index]) btns[index].classList.add('active');
+
+            // Update Description
+            document.getElementById('b-desc-text').innerText = branch.desc;
+            document.getElementById('b-desc-container').classList.remove('expanded');
+            document.getElementById('b-toggle-btn').innerText = '展開說明';
+
+            // Render Ratio Bar Chart
+            const ctx = document.getElementById('chartBranchRatio').getContext('2d');
+            if (chartBranchRatio) chartBranchRatio.destroy();
+
+            const restAmount = total - branch.amount;
+            const ratio = (total > 0) ? (branch.amount / total * 100).toFixed(1) : 0;
+
+            chartBranchRatio = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['預算比例'],
+                    datasets: [
+                        { label: branch.name, data: [branch.amount], backgroundColor: '#086788', barPercentage: 0.6 },
+                        { label: '其他計畫', data: [restAmount], backgroundColor: '#ecf0f1', barPercentage: 0.6 }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { stacked: true, display: false }, y: { stacked: true, display: false } },
+                    plugins: { 
+                        legend: { position: 'bottom' }, 
+                        tooltip: tooltipCurrencyCallback,
+                        title: { display: true, text: `該分支佔總計畫 ${ratio}%` }
+                    }
+                }
+            });
+        }
+
+        // [v163] Toggle function for Branch Description
+        function toggleBranchDesc() {
+            const container = document.getElementById('b-desc-container');
+            const btn = document.getElementById('b-toggle-btn');
+            if (container.classList.contains('expanded')) {
+                container.classList.remove('expanded');
+                btn.innerText = '展開說明';
+            } else {
+                container.classList.add('expanded');
+                btn.innerText = '收合說明';
+            }
         }
 
         function renderDetailChartsB(row){
@@ -1844,6 +1939,9 @@
                                     <span class="timeline-deadline-text">${date} ${text}</span>
                                 </div>
                               </li>`;
+                     // Optional: If you want to show other events on the same day below the line, uncomment below:
+                     // const otherEvents = events.filter(e => !e['事項'].startsWith('[LINE]'));
+                     // if (otherEvents.length > 0) { ... standard render logic ... }
                 } else {
                     let eventsHtml = '';
                     events.forEach(ev => {
