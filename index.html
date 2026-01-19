@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v165 最終完整功能整合版)</title>
+    <title>中央政府總預算觀測站 (v171)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -620,17 +620,36 @@
                 <h3 class="leg-detail-table-title title-cut">刪減案提案紀錄</h3>
                 <div style="overflow-x: auto;">
                     <table class="proposal-table">
-                        <thead><tr><th style="width:20%">工作計畫</th><th style="width:20%">刪減項目</th><th style="width:15%">刪減金額</th><th style="width:25%">刪減理由</th><th style="width:20%">審查結果</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width:12%">進度日期</th> 
+                                <th style="width:18%">工作計畫</th>
+                                <th style="width:18%">刪減項目</th>
+                                <th style="width:12%">刪減金額</th>
+                                <th style="width:25%">刪減理由</th>
+                                <th style="width:15%">審查結果</th>
+                            </tr>
+                        </thead>
                         <tbody id="table-cut-c"></tbody>
                     </table>
                 </div>
+                <div id="mc-updated-cut" style="text-align: right; font-size: 0.85rem; color: #888; font-weight: bold; margin-top: 5px; margin-bottom: 25px;"></div>
                 <h3 class="leg-detail-table-title title-freeze">凍結案提案紀錄</h3>
                 <div style="overflow-x: auto;">
                     <table class="proposal-table">
-                        <thead><tr><th style="width:20%">工作計畫</th><th style="width:20%">凍結項目</th><th style="width:15%">凍結金額</th><th style="width:25%">凍結理由</th><th style="width:20%">審查結果</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width:12%">進度日期</th> <th style="width:18%">工作計畫</th>
+                                <th style="width:18%">凍結項目</th>
+                                <th style="width:12%">凍結金額</th>
+                                <th style="width:25%">凍結理由</th>
+                                <th style="width:15%">審查結果</th>
+                            </tr>
+                        </thead>
                         <tbody id="table-freeze-c"></tbody>
                     </table>
                 </div>
+                <div id="mc-updated-freeze" style="text-align: right; font-size: 0.85rem; color: #888; font-weight: bold; margin-top: 5px; margin-bottom: 25px;"></div>
             </div>
         </div>
     </div>
@@ -820,7 +839,7 @@
         // Mock Data
         const MOCK_DATA_A=[{'計畫編號':'TEST001','所屬部會':'行政院','主管機關':'國防部','計畫名稱':'國防自主強化計畫 (測試資料)','預算金額':'5000000000','114年預算金額':'4800000000','政事別':'國防','工作內容':'測試說明。','分支計畫':'潛艦國造:3000000000:這是潛艦的詳細說明|無人機研發:2000000000:這是無人機的詳細說明','用途比例':'人事費:50000000|業務費:30000000|設備及投資:4000000000|獎補助費:10000000|債務費:0|預備金:0'}];
         const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','院會表決刪減':'500000','院會表決凍結':'30000000','通案刪減':'100000','通案凍結':'0','提案紀錄':'王小明:凍結:人事費:理由A','資料類型':'計畫'}];
-        const MOCK_DATA_C=[{'委員姓名':'王小明','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#設備採購#100萬#理由B#TEST001#通過'}];
+        const MOCK_DATA_C=[{'委員姓名':'王小明','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','更新時間':'2026/01/20', '提案明細':'刪減#國防自主強化計畫 (測試資料)#設備採購#100萬#理由B#TEST001#通過#114/05/20'}];
         const MOCK_DATA_D=[{'日期':'113/08/22', '事項':'行政院通過總預算案', '連結':''},{'日期':'113/08/30', '事項':'預算案送立法院審議', '連結':''},{'日期':'113/11/08', '事項':'付委審查', '連結':''}];
         
         let allDataPageA = [], allDataPageB = [], allDataPageB_Plans = [], allDataPageC = [], allDataPageD = []; 
@@ -1169,9 +1188,13 @@
         }
 
         // [v162] Restored openDetailC Function + Update button logic to includes('000000')
+        // [v166/167 新增功能] 支援時間戳記與進度日期
+        // [v170] 立委詳情函式：含時間戳記 + 日期格式化 (YYYY/MM/DD)
+        // [v171] 支援雙表格獨立時間戳記 (右下角顯示)
         function openDetailC(jsonStr) {
             const data = JSON.parse(decodeURIComponent(jsonStr));
             
+            // 1. 設定基本資料
             document.getElementById('mc-name').innerText = data['委員姓名'] || '-';
             
             const party = data['黨籍'] || '無黨籍';
@@ -1186,6 +1209,38 @@
             
             partyEl.className = `leg-party-tag ${partyClass}`;
 
+            // 2. [修改] 處理兩個不同的更新時間
+            
+            // Helper: 日期格式化函式
+            const formatUpdateDate = (dateStr) => {
+                if (!dateStr) return '無更新紀錄';
+                let str = dateStr.toString();
+                if (str.startsWith('Date')) {
+                    const dParts = str.match(/\d+/g);
+                    if (dParts && dParts.length >= 3) {
+                        const y = parseInt(dParts[0]);
+                        const m = parseInt(dParts[1]) + 1;
+                        const d = parseInt(dParts[2]);
+                        const mm = m < 10 ? '0' + m : m;
+                        const dd = d < 10 ? '0' + d : d;
+                        return `${y}/${mm}/${dd}`;
+                    }
+                }
+                return str;
+            };
+
+            // 讀取並填入「刪減案」更新時間
+            const cutTime = formatUpdateDate(data['刪減案更新時間']); // 需確認資料庫欄位名稱
+            const cutEl = document.getElementById('mc-updated-cut');
+            if(cutEl) cutEl.innerText = `資料更新時間：${cutTime}`;
+
+            // 讀取並填入「凍結案」更新時間
+            const freezeTime = formatUpdateDate(data['凍結案更新時間']); // 需確認資料庫欄位名稱
+            const freezeEl = document.getElementById('mc-updated-freeze');
+            if(freezeEl) freezeEl.innerText = `資料更新時間：${freezeTime}`;
+
+
+            // 3. 設定頭像 (不變)
             const avatarEl = document.getElementById('mc-avatar');
             avatarEl.innerHTML = ''; 
             const imgPath = `./photos/${data['委員姓名']}.jpg`;
@@ -1209,50 +1264,36 @@
             avatarEl.appendChild(iconSpan);
             avatarEl.appendChild(imgEl);
 
+            // 4. 生成提案表格 (含日期欄位與格式化) (不變)
             const details = data['提案明細'] || '';
             const cutsTbody = document.getElementById('table-cut-c');
             const freezesTbody = document.getElementById('table-freeze-c');
             cutsTbody.innerHTML = ''; freezesTbody.innerHTML = '';
             
+            const noDataHtml = '<tr><td colspan="6" style="text-align:center; color:#999;">無資料</td></tr>';
+
             if(!details) {
-                 cutsTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無資料</td></tr>';
-                 freezesTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">無資料</td></tr>';
+                cutsTbody.innerHTML = noDataHtml;
+                freezesTbody.innerHTML = noDataHtml;
             } else {
-                 details.split('|').forEach(item => {
+                details.split('|').forEach(item => {
                     const parts = item.split('#');
-                    // Expecting 7 parts in new format
-                    // 0:Type, 1:Project, 2:Item, 3:Amount, 4:Reason, 5:ID, 6:Result
-                    if(parts.length >= 7) {
+                    if(parts.length >= 8) {
                         const projectId = parts[5] ? parts[5].trim() : '';
-                        
-                        // [v162] Updated Logic: Hide button if ID includes '000000' or Name has '統刪'
                         const isAgencyLevel = projectId.includes('000000') || parts[1].includes('統刪');
                         const btnHtml = (projectId && !isAgencyLevel) ? `<br><button class="jump-btn" onclick="jumpToProjectB('${projectId}')">查看計畫</button>` : '';
                         
-                        const manualResult = parts[6] ? parts[6].trim() : ''; 
+                        const manualResult = parts[6] ? parts[6].trim() : '-'; 
+                        const dateRaw = parts[7] ? parts[7].trim() : '-';
 
-                        let resultText = '<span style="color:#999">-</span>';
+                        // 表格內的日期也套用同樣的格式化 (選用)
+                        let displayDate = formatUpdateDate(dateRaw);
+                        if (displayDate === '無更新紀錄') displayDate = '-';
 
-                        if (manualResult) {
-                            resultText = `<span style="font-weight:bold; color:var(--primary-color);">${manualResult}</span>`;
-                        } else if (projectId) {
-                            const projectB = allDataPageB.find(p => p['計畫編號'] === projectId);
-                            if (projectB) {
-                                const cutAmt = parseMoney(projectB['刪減金額']);
-                                const freezeAmt = parseMoney(projectB['凍結金額']);
-                                let resParts = [];
-                                if(cutAmt > 0) resParts.push(`刪減 ${formatCurrency(cutAmt)}`);
-                                if(freezeAmt > 0) resParts.push(`凍結 ${formatCurrency(freezeAmt)}`);
-                                
-                                if(resParts.length > 0) {
-                                    resultText = resParts.join('<br>');
-                                } else {
-                                    resultText = "<span style='color:var(--secondary-color); font-weight:bold;'>照案通過</span>";
-                                }
-                            }
-                        }
+                        let resultText = `<span style="font-weight:bold; color:var(--primary-color);">${manualResult}</span>`;
 
                         const rowHtml = `<tr>
+                            <td style="font-size:0.85rem; color:#666; font-weight:bold; white-space:nowrap;">${displayDate}</td>
                             <td>${parts[1]}${btnHtml}</td>
                             <td>${parts[2]}</td>
                             <td>${parts[3]}</td>
@@ -1263,18 +1304,33 @@
                         if(parts[0].includes('刪減')) cutsTbody.innerHTML += rowHtml;
                         else freezesTbody.innerHTML += rowHtml;
                     } 
-                    // Fallback for old data format (length 6) if necessary
-                    else if (parts.length >= 6) {
-                         // Simple fallback logic omitted for brevity
+                    // Fallback (舊格式)
+                    else if (parts.length === 7) {
+                        const projectId = parts[5] ? parts[5].trim() : '';
+                        const isAgencyLevel = projectId.includes('000000') || parts[1].includes('統刪');
+                        const btnHtml = (projectId && !isAgencyLevel) ? `<br><button class="jump-btn" onclick="jumpToProjectB('${projectId}')">查看計畫</button>` : '';
+                        const manualResult = parts[6] ? parts[6].trim() : '-';
+                        let resultText = `<span style="font-weight:bold; color:var(--primary-color);">${manualResult}</span>`;
+
+                        const rowHtml = `<tr>
+                            <td>-</td>
+                            <td>${parts[1]}${btnHtml}</td>
+                            <td>${parts[2]}</td>
+                            <td>${parts[3]}</td>
+                            <td>${parts[4]}</td>
+                            <td>${resultText}</td>
+                        </tr>`;
+                        if(parts[0].includes('刪減')) cutsTbody.innerHTML += rowHtml;
+                        else freezesTbody.innerHTML += rowHtml;
                     }
                 });
             }
-            
-            if(cutsTbody.innerHTML === '') cutsTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999">無刪減提案</td></tr>';
-            if(freezesTbody.innerHTML === '') freezesTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999">無凍結提案</td></tr>';
+    
+    if(cutsTbody.innerHTML === '') cutsTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999">無刪減提案</td></tr>';
+    if(freezesTbody.innerHTML === '') freezesTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999">無凍結提案</td></tr>';
 
-            document.getElementById('detailModalC').style.display = 'flex';
-        }
+    document.getElementById('detailModalC').style.display = 'flex';
+}
 
         // --- 5. Data Processing Logic (ALL functions here) ---
         function parseUsageString(usageStr) {
