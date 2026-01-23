@@ -501,6 +501,33 @@
             cursor: not-allowed;
             background: #f9f9f9;
         }
+        /* --- [RWD 修正補強] 針對手機介面的強制設定 --- */
+        @media (max-width: 768px) {
+            
+            /* 1. 首頁排行榜：改為單欄呈現 */
+            .ranking-container {
+                grid-template-columns: 1fr !important; /* 強制變為 1 欄 */
+                gap: 20px;
+            }
+
+            /* 2 & 3. 下拉式選單：改為上下排列 (適用於首頁與工作計畫分頁) */
+            .ministry-filters {
+                flex-direction: column !important; /* 強制變為垂直排列 */
+                gap: 10px;
+            }
+
+            /* 2. 首頁部會詳細分析圖表：改為單欄 (長條圖在上，圓餅圖在下) */
+            .ministry-dashboard {
+                grid-template-columns: 1fr !important; /* 強制變為 1 欄 */
+                gap: 30px;
+            }
+
+            /* 優化：手機版選單高度增加，比較好點擊 */
+            .ministry-select {
+                width: 100%;
+                padding: 12px;
+            }
+        }
     </style>
 </head>
 <body>
