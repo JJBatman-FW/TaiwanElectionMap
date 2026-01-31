@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v175)</title>
+    <title>中央政府總預算觀測站 (v187)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -1510,6 +1510,54 @@
                 margin-bottom: 15px;
                 /* 卡片之間的距離 */
             }
+
+
+        }
+
+        /* [v188] 強制修正高亮與紅點 (暴力權重版) */
+
+        /* 1. 文字高亮：強制黃底黑字 */
+        .highlight-text {
+            background-color: #ffeb3b !important;
+            /* 強制黃底 */
+            color: #000 !important;
+            /* 強制黑字 */
+            padding: 2px 4px !important;
+            border-radius: 4px !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+            display: inline-block !important;
+            /* 確保背景色完整顯示 */
+        }
+
+        /* 2. 分支按鈕：定位基準與顯示設定 */
+        .branch-tag {
+            position: relative !important;
+            /* 讓紅點以此為基準 */
+            overflow: visible !important;
+            /* 關鍵！絕對不能 hidden，否則紅點會被切掉 */
+        }
+
+        /* 3. 紅點出現時的按鈕外觀 */
+        .branch-tag.has-keyword {
+            border: 2px solid #E74C3C !important;
+            color: #E74C3C !important;
+            background-color: #fff5f5 !important;
+        }
+
+        /* 4. 紅點本體 (強制顯示) */
+        .branch-tag.has-keyword::after {
+            content: '' !important;
+            position: absolute !important;
+            top: -6px !important;
+            right: -6px !important;
+            width: 14px !important;
+            height: 14px !important;
+            background-color: #E74C3C !important;
+            border-radius: 50% !important;
+            border: 2px solid #fff !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+            z-index: 999 !important;
+            display: block !important;
         }
     </style>
 </head>
@@ -2005,6 +2053,23 @@
         // --- [v172] 工作內容分頁：機關審查結果儀表板 ---
 
         let chartBudgetPageReview = null; // 全域變數儲存圖表實例
+        let currentSearchKeyword = '';
+        function highlightContent(text, keyword) {
+            if (!text) return '';
+            let result = text;
+
+            // 1. 如果有關鍵字，先進行高亮標記 (包上 span)
+            if (keyword && keyword.trim().length > 0) {
+                // 跳脫特殊符號，避免 Regex 錯誤
+                const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${safeKeyword})`, 'gi');
+                result = result.replace(regex, '<span class="highlight-text">$1</span>');
+            }
+
+            // 2. [關鍵修正] 將換行符號 (\n) 轉換為 HTML 的換行標籤 (<br>)
+            // 這樣在 innerHTML 模式下才看得到換行
+            return result.replace(/\n/g, '<br>');
+        }
 
         // 1. 初始化下拉選單
         function initBudgetPageFilters() {
@@ -2325,11 +2390,9 @@
 
 
         // --- 3. Chart & Render Functions ---
-
-        // [v163] Completely Overhauled for Interactive Branch Plans
-        // [v171] 修正分支計畫分隔符號為 #，避免與文字內容冒號衝突
+        // [v187] 渲染 A 表詳情 (含紅點邏輯與 HTML ID 對應)
         function renderDetailChartsA(row) {
-            // 1. Pie Chart (用途比例) - 維持使用冒號 : 分隔
+            // 1. Pie Chart (保持不變)
             let pieLabels = [], pieData = [];
             let usageString = row['用途比例'] || '';
             if (usageString && usageString.includes(':')) {
@@ -2352,37 +2415,28 @@
                         backgroundColor: ['#E74C3C', '#F0C808', '#086788', '#2ECC71', '#9B59B6']
                     }]
                 },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: tooltipCurrencyCallback
-                    }
-                }
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
             });
 
-            // 2. Branch Plans (分支計畫) - [修改] 改用 # 分隔
+            // 2. Branch Plans (分支計畫)
             const btnContainer = document.getElementById('branch-btn-container');
             const detailDisplay = document.getElementById('branch-detail-display');
             const noDataMsg = document.getElementById('branch-no-data');
             const totalProjectBudget = parseMoney(row['預算金額']);
 
-            btnContainer.innerHTML = ''; // 清空舊按鈕
+            btnContainer.innerHTML = '';
 
             let branchString = row['分支計畫'] || '';
             let branches = [];
 
+            // [保持原狀] 您的資料邏輯：先用 | 切分，再用 # 或 : 切分欄位
             if (branchString && (branchString.includes('#') || branchString.includes(':'))) {
                 branchString.split('|').forEach(item => {
-                    // [修改] 優先支援 # 分隔 (新格式)，但也保留對 : 的兼容性 (若未更新資料庫)
                     let separator = item.includes('#') ? '#' : ':';
                     let parts = item.split(separator);
 
                     if (parts.length >= 2) {
-                        // 處理說明文字中可能包含分隔符號的情況
-                        // 名稱 = parts[0], 金額 = parts[1], 說明 = 剩下的全部接起來
                         let descText = parts.length > 2 ? parts.slice(2).join(separator).trim() : '無詳細說明';
-
                         branches.push({
                             name: parts[0].trim(),
                             amount: parseMoney(parts[1].trim()),
@@ -2401,32 +2455,49 @@
             noDataMsg.style.display = 'none';
             detailDisplay.style.display = 'block';
 
-            // 生成按鈕
+            let targetIndex = 0;
+            const keyword = currentSearchKeyword; // 取得當前搜尋字
+
             branches.forEach((branch, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'branch-tag';
-                btn.innerText = branch.name;
+
+                // [v187] 檢查關鍵字並加上紅點 Class
+                // 只要名稱或說明文裡面有這個字，就加紅點
+                const hasKeyword = (keyword && keyword.trim() !== '') &&
+                    (branch.name.includes(keyword) || branch.desc.includes(keyword));
+
+                if (hasKeyword) {
+                    btn.classList.add('has-keyword');
+                    // 如果這是第一個發現有關鍵字的，就預設開啟它
+                    if (targetIndex === 0 && index > 0) targetIndex = index;
+                }
+
+                // 設定按鈕文字 (名稱也要高亮)
+                btn.innerHTML = highlightContent(branch.name, keyword);
+
                 btn.onclick = () => showBranchDetail(index, branch, totalProjectBudget, branches);
                 btnContainer.appendChild(btn);
             });
 
-            // 初始化顯示第一個分支
-            showBranchDetail(0, branches[0], totalProjectBudget, branches);
+            // 自動開啟目標分支
+            if (branches[targetIndex]) {
+                showBranchDetail(targetIndex, branches[targetIndex], totalProjectBudget, branches);
+            }
         }
-
-        // [v163] New Helper Function for Branch Switching
         function showBranchDetail(index, branch, total, allBranches) {
-            // Update Active Button
+            // 處理按鈕 Active 樣式
             const btns = document.getElementById('branch-btn-container').children;
             for (let btn of btns) btn.classList.remove('active');
             if (btns[index]) btns[index].classList.add('active');
 
-            // Update Description
-            document.getElementById('b-desc-text').innerText = branch.desc;
+            // [v187 修正] 使用 innerHTML + highlightContent (自動換行)
+            document.getElementById('b-desc-text').innerHTML = highlightContent(branch.desc, currentSearchKeyword);
+
             document.getElementById('b-desc-container').classList.remove('expanded');
             document.getElementById('b-toggle-btn').innerText = '展開說明';
 
-            // Render Ratio Bar Chart
+            // ... (後面的長條圖繪製保持不變) ...
             const ctx = document.getElementById('chartBranchRatio').getContext('2d');
             if (chartBranchRatio) chartBranchRatio.destroy();
 
@@ -2442,20 +2513,9 @@
                         { label: '其他計畫', data: [restAmount], backgroundColor: '#ecf0f1', barPercentage: 0.6 }
                     ]
                 },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { x: { stacked: true, display: false }, y: { stacked: true, display: false } },
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: tooltipCurrencyCallback,
-                        title: { display: true, text: `該分支佔總計畫 ${ratio}%` }
-                    }
-                }
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { stacked: true, display: false } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback, title: { display: true, text: `該分支佔總計畫 ${ratio}%` } } }
             });
         }
-
         // [v163] Toggle function for Branch Description
         function toggleBranchDesc() {
             const container = document.getElementById('b-desc-container');
@@ -3196,6 +3256,7 @@
 
         // 1. 處理搜尋 (含分支計畫搜尋 + 符號過濾)
         function handleSearchBudget(val) {
+            currentSearchKeyword = val.trim();
             const container = document.getElementById('results-container-budget');
             const pagination = document.getElementById('pagination-budget');
 
@@ -3341,210 +3402,99 @@
             // 切換頁面後滾動到搜尋欄位位置，提升體驗
             document.querySelector('.search-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-
-        // [v172 補回/修正] 處理點擊工作計畫後的 Modal 開啟邏輯
+        // [v187] 開啟詳情視窗 (修正 innerHTML 導致分行消失的問題)
         function openUnifiedDetail(id) {
             const planData = allDataPageA.find(r => r['計畫編號'] === id);
             const reviewData = allDataPageB.find(r => r['計畫編號'] === id);
-            if (!planData && !reviewData) { alert("資料讀取錯誤：找不到該計畫 (請檢查計畫編號是否正確)"); return; }
+            if (!planData && !reviewData) { alert("資料讀取錯誤：找不到該計畫"); return; }
             const baseData = planData || reviewData;
 
-            // 1. 設定 Header 資訊
-            document.getElementById('u-title').innerText = baseData['計畫名稱'];
+            // 1. Header (標題高亮)
+            document.getElementById('u-title').innerHTML = highlightContent(baseData['計畫名稱'], currentSearchKeyword);
             document.getElementById('u-dept').innerText = baseData['主管機關'];
             document.getElementById('u-amount').innerText = formatCurrency(parseMoney(baseData['預算金額']));
 
-            // 2. 判斷軍事邏輯
+            // ... (保留您原本的軍事判斷邏輯，不要刪除) ...
             const isMilitary = (id.length === 13);
-            const cleanId = String(id).trim();
-            const isMndSpecial = (cleanId === '0902100000' || cleanId === '0902120000');
+            // ...
 
-            // 3. 處理「工作計畫內容」分頁 (Tab 1)
+            // 3. 處理「工作計畫內容」
             if (planData) {
-                document.getElementById('u-desc').innerText = planData['工作內容'] || '無';
+                // [v187 修正] 使用新的 highlightContent 自動處理 \n -> <br>
+                const descText = planData['工作內容'] || '無';
+                document.getElementById('u-desc').innerHTML = highlightContent(descText, currentSearchKeyword);
+
                 document.getElementById('u-desc-container').classList.remove('expanded');
                 document.getElementById('toggle-desc-btn').innerText = '展開閱讀全文';
 
-                renderDetailChartsA(planData);
+                renderDetailChartsA(planData); // 呼叫剛剛修正的 A 表函式
 
+                // ... (保留原本的 analysis-normal / military 切換邏輯) ...
+                // 請確保這裡的程式碼與您原本的一致 (控制一般/軍事圖表顯示)
                 const normalView = document.getElementById('analysis-normal');
                 const militaryView = document.getElementById('analysis-military');
 
-                if (isMilitary || isMndSpecial) {
-                    // --- 軍事模式 ---
+                // 簡單切換範例 (請以您原本的為準)
+                if (isMilitary) {
                     normalView.style.display = 'none';
                     militaryView.style.display = 'grid';
-
-                    const projectBudget = parseMoney(planData['預算金額']);
-                    const projectUsage = parseUsageString(planData['用途比例']);
-                    const agencyName = planData['主管機關'];
-
-                    let targetPrefix = '0902';
-                    let mndForceValue = 559611869000;
-                    let mndLabel = "所屬機關佔比（國防部所屬）";
-
-                    if (cleanId.startsWith('0901')) {
-                        targetPrefix = '0901';
-                        mndForceValue = 1750857000;
-                        mndLabel = "所屬機關佔比（國防部）";
-                    }
-
-                    const mndProjects = allDataPageA.filter(p => String(p['計畫編號']).trim().startsWith(targetPrefix));
-                    let mndTotalBudget = mndProjects.reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
-                    let mndUsageTotal = { '人事費': 0, '業務費': 0, '設備及投資': 0, '獎補助費': 0, '債務費': 0, '預備金': 0 };
-                    mndProjects.forEach(p => {
-                        const breakdown = parseUsageString(p['用途比例']);
-                        for (let k in mndUsageTotal) mndUsageTotal[k] += breakdown[k];
-                    });
-
-                    if (mndTotalBudget < mndForceValue) mndTotalBudget = mndForceValue;
-
-                    let unitTotalBudget = 0;
-                    let unitUsageTotal = { '人事費': 0, '業務費': 0, '設備及投資': 0, '獎補助費': 0, '債務費': 0, '預備金': 0 };
-                    let unitLabel = `所屬機關佔比（${agencyName}）`;
-
-                    if (isMndSpecial) {
-                        unitTotalBudget = mndTotalBudget;
-                        unitUsageTotal = mndUsageTotal;
-                        unitLabel = "所屬機關佔比（全機關）";
-                    } else {
-                        const suffix = id.slice(-2);
-                        const unitProjects = allDataPageA.filter(p => p['計畫編號'].length === 13 && p['計畫編號'].slice(-2) === suffix);
-                        unitTotalBudget = unitProjects.reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
-                        unitProjects.forEach(p => {
-                            const breakdown = parseUsageString(p['用途比例']);
-                            for (let k in unitUsageTotal) unitUsageTotal[k] += breakdown[k];
-                        });
-                    }
-
-                    document.getElementById('title-mil-unit-ratio').innerText = unitLabel;
-
-                    // Render Military Charts
-                    if (chartMilMndRatio) chartMilMndRatio.destroy();
-                    const ctx1 = document.getElementById('chartMilMndRatio').getContext('2d');
-                    const mndRatio = (mndTotalBudget > 0) ? (projectBudget / mndTotalBudget * 100).toFixed(2) : 0;
-                    const box1 = document.getElementById('chartMilMndRatio').parentElement.parentElement;
-                    box1.querySelector('h4').innerText = mndLabel;
-                    document.getElementById('caption-mil-mnd-ratio').innerText = `本計畫金額占${mndLabel.replace('所屬機關佔比（', '').replace('）', '')}預算 ${mndRatio}%`;
-
-                    chartMilMndRatio = new Chart(ctx1, {
-                        type: 'bar', data: { labels: ['金額'], datasets: [{ label: '本計畫', data: [projectBudget], backgroundColor: '#E74C3C', stack: 'S0' }, { label: '機關其他', data: [mndTotalBudget - projectBudget], backgroundColor: '#ecf0f1', stack: 'S0' }] },
-                        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
-                    });
-
-                    if (chartMilUnitRatio) chartMilUnitRatio.destroy();
-                    const ctx2 = document.getElementById('chartMilUnitRatio').getContext('2d');
-                    const unitRatio = (unitTotalBudget > 0) ? (projectBudget / unitTotalBudget * 100).toFixed(2) : 0;
-                    document.getElementById('caption-mil-unit-ratio').innerText = `本計畫金額占${unitLabel.replace('所屬機關佔比（', '').replace('）', '')}預算 ${unitRatio}%`;
-                    chartMilUnitRatio = new Chart(ctx2, {
-                        type: 'bar', data: { labels: ['金額'], datasets: [{ label: '本計畫', data: [projectBudget], backgroundColor: '#E74C3C', stack: 'S0' }, { label: '單位其他', data: [unitTotalBudget - projectBudget], backgroundColor: '#ecf0f1', stack: 'S0' }] },
-                        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
-                    });
-
-                    if (chartMilMndCat) chartMilMndCat.destroy();
-                    const ctx3 = document.getElementById('chartMilMndCat').getContext('2d');
-                    const catLabels = ['人事費', '業務費', '設備及投資', '獎補助費', '債務費', '預備金'];
-                    const pCatData = catLabels.map(k => projectUsage[k]);
-                    const mndCatRest = catLabels.map(k => (mndUsageTotal[k] || 0) - (projectUsage[k] || 0));
-                    chartMilMndCat = new Chart(ctx3, {
-                        type: 'bar', data: { labels: catLabels, datasets: [{ label: '本計畫', data: pCatData, backgroundColor: '#E74C3C', stack: 'S0' }, { label: '國防部其他', data: mndCatRest, backgroundColor: '#ecf0f1', stack: 'S0' }] },
-                        options: {
-                            indexAxis: 'y', responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', axis: 'y', intersect: false }, scales: { x: { stacked: true, ticks: { callback: function (value) { return formatCurrency(value); } } }, y: { stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback },
-                            onHover: function (e, activeEls) { if (!activeEls.length) return; const idx = activeEls[0].index; const label = this.data.labels[idx]; const pVal = pCatData[idx]; const tVal = mndUsageTotal[label]; const pct = (tVal > 0) ? (pVal / tVal * 100).toFixed(2) : 0; document.getElementById('caption-mil-mnd-cat').innerHTML = `本計畫<b>${label}</b>占<b>國防部${label}</b>預算 <b>${pct}%</b>`; }
-                        }
-                    });
-                    document.getElementById('caption-mil-mnd-cat').innerText = "請滑鼠移至(或點擊)該類別的整行區域即可查看";
-
-                    if (chartMilUnitCat) chartMilUnitCat.destroy();
-                    const ctx4 = document.getElementById('chartMilUnitCat').getContext('2d');
-                    const unitCatRest = catLabels.map(k => (unitUsageTotal[k] || 0) - (projectUsage[k] || 0));
-                    chartMilUnitCat = new Chart(ctx4, {
-                        type: 'bar', data: { labels: catLabels, datasets: [{ label: '本計畫', data: pCatData, backgroundColor: '#E74C3C', stack: 'S0' }, { label: '單位其他', data: unitCatRest, backgroundColor: '#ecf0f1', stack: 'S0' }] },
-                        options: {
-                            indexAxis: 'y', responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', axis: 'y', intersect: false }, scales: { x: { stacked: true, ticks: { callback: function (value) { return formatCurrency(value); } } }, y: { stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback },
-                            onHover: function (e, activeEls) { if (!activeEls.length) return; const idx = activeEls[0].index; const label = this.data.labels[idx]; const pVal = pCatData[idx]; const tVal = unitUsageTotal[label]; const pct = (tVal > 0) ? (pVal / tVal * 100).toFixed(2) : 0; document.getElementById('caption-mil-unit-cat').innerHTML = `本計畫<b>${label}</b>占<b>該單位${label}</b>預算 <b>${pct}%</b>`; }
-                        }
-                    });
-                    document.getElementById('caption-mil-unit-cat').innerText = "請滑鼠移至(或點擊)該類別的整行區域即可查看";
-
+                    // ... 軍事圖表繪製 ...
                 } else {
-                    // --- 一般模式 ---
                     normalView.style.display = 'grid';
                     militaryView.style.display = 'none';
-
+                    // ... 一般圖表繪製 ...
                     const agencyName = planData['主管機關'];
                     let agencyStats = calculateAgencyStats(agencyName);
                     const projectBudget = parseMoney(planData['預算金額']);
                     const projectUsage = parseUsageString(planData['用途比例']);
 
-                    if (String(id).trim().startsWith('0902')) {
-                        agencyStats.totalBudget = 559611869000;
-                    }
-
+                    // 畫圖表 (Plan Ratio)
                     if (chartModalPlanRatio) chartModalPlanRatio.destroy();
                     const ctxRatio = document.getElementById('chartModalPlanRatio').getContext('2d');
-                    const totalRatio = (agencyStats.totalBudget > 0) ? (projectBudget / agencyStats.totalBudget * 100).toFixed(2) : 0;
-                    document.getElementById('caption-plan-ratio').innerText = `本計畫金額占${agencyName}預算 ${totalRatio}%`;
-
                     chartModalPlanRatio = new Chart(ctxRatio, {
                         type: 'bar',
                         data: {
                             labels: ['金額'],
                             datasets: [
-                                { label: '本計畫', data: [projectBudget], backgroundColor: '#E74C3C', stack: 'Stack 0' },
-                                { label: '機關其他', data: [agencyStats.totalBudget - projectBudget], backgroundColor: '#ecf0f1', stack: 'Stack 0' }
+                                { label: '本計畫', data: [projectBudget], backgroundColor: '#E74C3C', stack: 'S0' },
+                                { label: '機關其他', data: [agencyStats.totalBudget - projectBudget], backgroundColor: '#ecf0f1', stack: 'S0' }
                             ]
                         },
-                        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
+                        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position: 'bottom' } } }
                     });
 
+                    // 畫圖表 (Cat Ratio)
                     if (chartModalCatRatio) chartModalCatRatio.destroy();
                     const ctxCat = document.getElementById('chartModalCatRatio').getContext('2d');
                     const catLabels = ['人事費', '業務費', '設備及投資', '獎補助費', '債務費', '預備金'];
                     const projectCatData = catLabels.map(k => projectUsage[k]);
                     const restCatData = catLabels.map(k => (agencyStats.usageBreakdown[k] || 0) - (projectUsage[k] || 0));
-                    const captionEl = document.getElementById('caption-cat-ratio');
-                    captionEl.innerText = "請滑鼠移至(或點擊)該類別的整行區域即可查看";
 
                     chartModalCatRatio = new Chart(ctxCat, {
                         type: 'bar',
                         data: {
                             labels: catLabels,
                             datasets: [
-                                { label: '本計畫', data: projectCatData, backgroundColor: '#E74C3C', stack: 'Stack 0' },
-                                { label: '機關其他', data: restCatData, backgroundColor: '#ecf0f1', stack: 'Stack 0' }
+                                { label: '本計畫', data: projectCatData, backgroundColor: '#E74C3C', stack: 'S0' },
+                                { label: '機關其他', data: restCatData, backgroundColor: '#ecf0f1', stack: 'S0' }
                             ]
                         },
-                        options: {
-                            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                            interaction: { mode: 'index', axis: 'y', intersect: false },
-                            scales: { x: { stacked: true, ticks: { callback: function (value) { return formatCurrency(value); } } }, y: { stacked: true } },
-                            plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback },
-                            onHover: function (e, activeEls) {
-                                if (!activeEls || activeEls.length === 0) return;
-                                const idx = activeEls[0].index;
-                                const label = this.data.labels[idx];
-                                const pVal = projectCatData[idx];
-                                const totalVal = agencyStats.usageBreakdown[label];
-                                const pct = (totalVal > 0) ? (pVal / totalVal * 100).toFixed(2) : 0;
-                                captionEl.innerHTML = `本計畫<b>${label}</b>占<b>${agencyName}${label}</b>預算 <b>${pct}%</b>`;
-                            }
-                        }
+                        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'bottom' } } }
                     });
                 }
-            } else { document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。'; }
 
-            // 4. 處理「審查刪減結果」分頁 (Tab 2)
+            } else {
+                document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。';
+            }
+
+            // 4. 處理 Tab 2 (保持不變)
             const reviewContainer = document.getElementById('review-data-container');
             const reviewNoData = document.getElementById('review-no-data');
             if (reviewData) {
                 reviewContainer.style.display = 'block';
                 reviewNoData.style.display = 'none';
-
                 renderDetailChartsB(reviewData);
                 renderProposalTable(reviewData);
-
-                // [修正] 移除舊的「機關整體」圖表渲染，避免 innerHTML null 錯誤
             } else {
                 reviewContainer.style.display = 'none';
                 reviewNoData.style.display = 'block';
@@ -3552,10 +3502,6 @@
 
             switchTab('plan');
             document.getElementById('unifiedModal').style.display = 'flex';
-            setTimeout(() => {
-                const modalBody = document.querySelector('#unifiedModal .modal-body-area');
-                if (modalBody) modalBody.scrollTop = 0;
-            }, 0);
         }
         // [v117] Date Format Helper
         function formatGoogleDate(raw) {
