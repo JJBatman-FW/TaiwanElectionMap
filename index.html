@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v180)</title>
+    <title>中央政府總預算觀測站 (v175)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -319,8 +319,6 @@
             top: 5px;
             height: 1.2em;
             width: 6px;
-            background: var(--secondary-color);
-            border-radius: 0 4px 4px 0;
         }
 
         .chart-container {
@@ -1501,6 +1499,17 @@
                 width: 100%;
                 padding: 12px;
             }
+
+            #agency-project-list {
+                display: block !important;
+                /* 取消 Grid，變回垂直堆疊 */
+                margin-top: 20px;
+            }
+
+            #agency-project-list .project-block {
+                margin-bottom: 15px;
+                /* 卡片之間的距離 */
+            }
         }
     </style>
 </head>
@@ -1913,6 +1922,13 @@
                         style="text-align:center; color:#666; font-size:0.9rem; margin-top:10px;">
                         請選擇機關以查看審查結果比例
                     </div>
+                    <div class="chart-container" style="position: relative; height:180px; width:100%;">
+                        <canvas id="chartBudgetPageReview"></canvas>
+                    </div>
+
+                    <div id="agency-project-list">
+                    </div>
+                    <div id="agency-pagination" class="pagination-container"></div>
                 </div>
             </div>
         </section>
@@ -2005,20 +2021,24 @@
             // [關鍵修正] 選單建立後，立刻執行一次更新，顯示「全國總覽」
             updateBudgetPageReview();
         }
+        // --- [v178] 機關審查分析：分頁與列表系統 ---
 
-        // 2. 更新圖表與連動選單
+        // 全域變數：記錄機關分析目前的列表資料
+        let currentAgencyProjects = [];
+        let agencyCurrentPage = 1;
+
+        // 1. 更新圖表 + 準備分頁資料
         function updateBudgetPageReview() {
             const ministrySelect = document.getElementById('bp-filter-ministry');
             const unitSelect = document.getElementById('bp-filter-unit');
             const selectedMinistry = ministrySelect.value;
 
-            // 連動邏輯：選部會 -> 更新機關選單
+            // --- 連動邏輯 (保持不變) ---
             if (selectedMinistry) {
                 const agencies = [...new Set(allDataPageA
                     .filter(d => d['所屬部會'] === selectedMinistry)
                     .map(d => d['主管機關']))]
                     .filter(a => a).sort();
-
                 const lastMinistry = unitSelect.getAttribute('data-last-ministry');
                 if (lastMinistry !== selectedMinistry) {
                     let html = '<option value="">請選擇主管機關 (全部)</option>';
@@ -2035,34 +2055,29 @@
             const selectedAgency = unitSelect.value;
             const captionEl = document.getElementById('bp-review-caption');
 
-            // --- 計算邏輯 ---
-            let totalBudget = 0;
-            let totalCut = 0;
-            let totalFreeze = 0;
+            // --- 準備資料 & 計算統計 ---
+            let totalBudget = 0, totalCut = 0, totalFreeze = 0;
             let titleText = "";
+            let filteredProjects = [];
 
+            // [資料篩選邏輯]
             if (selectedAgency) {
-                // [情境 3] 已選擇特定機關
                 const stats = calculateAgencyStats(selectedAgency);
-                totalBudget = stats.totalBudget;
-                totalCut = stats.totalCut;
-                totalFreeze = stats.totalFreeze;
+                totalBudget = stats.totalBudget; totalCut = stats.totalCut; totalFreeze = stats.totalFreeze;
                 titleText = selectedAgency;
+                filteredProjects = allDataPageA.filter(d => d['主管機關'] === selectedAgency && !d['計畫編號'].endsWith('000000'));
             } else if (selectedMinistry) {
-                // [情境 2] 只選部會
                 titleText = selectedMinistry + " (全體)";
                 const ministryProjects = allDataPageA.filter(d => d['所屬部會'] === selectedMinistry);
-
                 if (selectedMinistry === '國防部') {
                     const statsMND = calculateAgencyStats('國防部');
                     const statsSub = calculateAgencyStats('國防部所屬');
                     totalBudget = statsMND.totalBudget + statsSub.totalBudget;
                     totalCut = statsMND.totalCut + statsSub.totalCut;
                     totalFreeze = statsMND.totalFreeze + statsSub.totalFreeze;
+                    filteredProjects = ministryProjects.filter(d => !d['計畫編號'].endsWith('000000'));
                 } else {
                     ministryProjects.forEach(p => { totalBudget += parseMoney(p['預算金額']); });
-
-                    // 找出該部會的機關清單，再從B表加總
                     const agenciesInMinistry = [...new Set(ministryProjects.map(p => p['主管機關']))];
                     allDataPageB.forEach(r => {
                         if (agenciesInMinistry.includes(r['主管機關'])) {
@@ -2070,41 +2085,28 @@
                             totalFreeze += parseMoney(r['凍結金額']);
                         }
                     });
+                    filteredProjects = ministryProjects.filter(d => !d['計畫編號'].endsWith('000000'));
                 }
-
             } else {
-                // [情境 1] 兩個都沒選 (預設狀態) -> 加總全部
                 titleText = "中央政府總預算案 (全體)";
+                // 全國總覽時，資料太多，不顯示列表
+                filteredProjects = [];
 
-                // 預算總額 (A表) + 國防部機密預算補正
-                let rawTotalA = 0;
-                allDataPageA.forEach(p => rawTotalA += parseMoney(p['預算金額']));
-
-                const mndExisting = allDataPageA.filter(p => {
-                    const id = String(p['計畫編號']).trim();
-                    return id.startsWith('0901') || id.startsWith('0902');
-                }).reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
-
+                // (省略全國金額計算，保持原本邏輯即可)
+                let rawTotalA = 0; allDataPageA.forEach(p => rawTotalA += parseMoney(p['預算金額']));
+                const mndExisting = allDataPageA.filter(p => (String(p['計畫編號']).trim().startsWith('0901') || String(p['計畫編號']).trim().startsWith('0902'))).reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
                 const mndTarget = 1750857000 + 559611869000;
                 const diff = mndTarget - mndExisting;
-
                 totalBudget = rawTotalA + (diff > 0 ? diff : 0);
-
-                // 刪減凍結總額 (B表)
-                allDataPageB.forEach(r => {
-                    totalCut += parseMoney(r['刪減金額']);
-                    totalFreeze += parseMoney(r['凍結金額']);
-                });
+                allDataPageB.forEach(r => { totalCut += parseMoney(r['刪減金額']); totalFreeze += parseMoney(r['凍結金額']); });
             }
 
-            // --- 繪圖數據準備 ---
+            // --- 更新圖表文字 ---
             const totalPass = totalBudget - totalCut - totalFreeze;
-            // 避免分母為0
             const pctPass = (totalBudget > 0) ? (totalPass / totalBudget * 100).toFixed(1) : 0;
             const pctCut = (totalBudget > 0) ? (totalCut / totalBudget * 100).toFixed(1) : 0;
             const pctFreeze = (totalBudget > 0) ? (totalFreeze / totalBudget * 100).toFixed(1) : 0;
 
-            // 更新文字說明
             captionEl.innerHTML = `
         <span style="color:#086788; font-weight:bold;">${titleText}</span> 總預算：${formatCurrency(totalBudget)}<br>
         通過：<b>${pctPass}%</b> | 
@@ -2112,10 +2114,9 @@
         <span style="color:#F0C808">凍結：<b>${pctFreeze}%</b> (${formatCurrency(totalFreeze)})</span>
     `;
 
-            // 繪製圖表
+            // --- 重繪圖表 ---
             const ctx = document.getElementById('chartBudgetPageReview').getContext('2d');
             if (chartBudgetPageReview) chartBudgetPageReview.destroy();
-
             chartBudgetPageReview = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -2127,20 +2128,100 @@
                     ]
                 },
                 options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { stacked: true, display: false, max: totalBudget },
-                        y: { stacked: true, display: false }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: tooltipCurrencyCallback
-                    }
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    scales: { x: { stacked: true, display: false, max: totalBudget }, y: { stacked: true, display: false } },
+                    plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback }
                 }
             });
+
+            // --- [關鍵修改] 呼叫分頁渲染系統 ---
+            currentAgencyProjects = filteredProjects; // 存入全域變數
+            agencyCurrentPage = 1; // 重置為第一頁
+            renderAgencyPagedResults(); // 開始渲染
         }
+
+        // 2. 渲染機關列表 (含分頁)
+        function renderAgencyPagedResults() {
+            const container = document.getElementById('agency-project-list');
+            const pagination = document.getElementById('agency-pagination');
+            const ITEMS_PER_PAGE = 5; // 一頁 5 筆
+
+            if (currentAgencyProjects.length === 0) {
+                container.innerHTML = '';
+                pagination.innerHTML = '';
+                return;
+            }
+
+            // 計算切片
+            const start = (agencyCurrentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageData = currentAgencyProjects.slice(start, end);
+
+            // 渲染卡片 HTML
+            let html = '';
+            pageData.forEach(row => {
+                const id = row['計畫編號'];
+                const amountRaw = parseMoney(row['預算金額']);
+
+                html += `<div class="project-block" onclick="openUnifiedDetail('${id}')">
+            <div class="pb-info">
+                <h3 class="pb-title">${row['計畫名稱']}</h3>
+                <span class="pb-dept">${row['主管機關']}</span>
+            </div>
+            <div class="pb-amount">${formatCurrency(amountRaw)}</div>
+        </div>`;
+            });
+            container.innerHTML = html;
+
+            // 渲染分頁按鈕 (與搜尋分頁邏輯相同，但綁定不同的切換函式)
+            renderAgencyPaginationControls(ITEMS_PER_PAGE);
+        }
+
+        // 3. 渲染分頁控制項
+        function renderAgencyPaginationControls(itemsPerPage) {
+            const pagination = document.getElementById('agency-pagination');
+            const totalPages = Math.ceil(currentAgencyProjects.length / itemsPerPage);
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            // 上一頁
+            html += `<button class="page-btn" onclick="changeAgencyPage(${agencyCurrentPage - 1})" ${agencyCurrentPage === 1 ? 'disabled' : ''}>&lt;</button>`;
+
+            // 頁碼
+            let startPage = Math.max(1, agencyCurrentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button class="page-btn ${i === agencyCurrentPage ? 'active' : ''}" onclick="changeAgencyPage(${i})">${i}</button>`;
+            }
+
+            // 下一頁
+            html += `<button class="page-btn" onclick="changeAgencyPage(${agencyCurrentPage + 1})" ${agencyCurrentPage === totalPages ? 'disabled' : ''}>&gt;</button>`;
+
+            // 總筆數提示
+            html += `<div style="width:100%; text-align:center; font-size:0.85rem; color:#888; margin-top:5px;">共 ${currentAgencyProjects.length} 筆計畫</div>`;
+
+            pagination.innerHTML = html;
+        }
+
+        // 4. 切換頁面函式
+        function changeAgencyPage(page) {
+            const totalPages = Math.ceil(currentAgencyProjects.length / 5);
+            if (page < 1 || page > totalPages) return;
+
+            agencyCurrentPage = page;
+            renderAgencyPagedResults();
+
+            // 切換後自動滾動到列表頂端 (體驗優化)
+            document.getElementById('agency-project-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+
         // --- 2. Helper Functions ---
         function parseMoney(str) {
             if (!str) return 0;
@@ -3476,166 +3557,6 @@
                 if (modalBody) modalBody.scrollTop = 0;
             }, 0);
         }
-
-        // [v156] Fixed Military Logic
-        // [v172 修正] 移除 Modal 內機關整體審查結果的相關邏輯，修復 innerHTML null 錯誤
-        // [v173] 更新圖表與連動選單 (支援全部、部會、機關三層級)
-        function updateBudgetPageReview() {
-            const ministrySelect = document.getElementById('bp-filter-ministry');
-            const unitSelect = document.getElementById('bp-filter-unit');
-            const selectedMinistry = ministrySelect.value;
-
-            // 連動邏輯：選部會 -> 更新機關選單
-            if (selectedMinistry) {
-                const agencies = [...new Set(allDataPageA
-                    .filter(d => d['所屬部會'] === selectedMinistry)
-                    .map(d => d['主管機關']))]
-                    .filter(a => a).sort();
-
-                const lastMinistry = unitSelect.getAttribute('data-last-ministry');
-                if (lastMinistry !== selectedMinistry) {
-                    let html = '<option value="">請選擇主管機關 (全部)</option>'; // [修改] 預設為全部
-                    agencies.forEach(a => { html += `<option value="${a}">${a}</option>`; });
-                    unitSelect.innerHTML = html;
-                    unitSelect.value = "";
-                    unitSelect.setAttribute('data-last-ministry', selectedMinistry);
-                }
-            } else {
-                unitSelect.innerHTML = '<option value="">請選擇主管機關</option>';
-                unitSelect.value = "";
-            }
-
-            const selectedAgency = unitSelect.value;
-            const captionEl = document.getElementById('bp-review-caption');
-
-            // --- 計算邏輯開始 ---
-            let totalBudget = 0;
-            let totalCut = 0;
-            let totalFreeze = 0;
-            let titleText = "";
-
-            if (selectedAgency) {
-                // [情境 3] 已選擇特定機關 -> 使用 calculateAgencyStats 取得該機關數據 (含國防部特殊校正)
-                const stats = calculateAgencyStats(selectedAgency);
-                totalBudget = stats.totalBudget;
-                totalCut = stats.totalCut;
-                totalFreeze = stats.totalFreeze;
-                titleText = selectedAgency;
-            } else if (selectedMinistry) {
-                // [情境 2] 只選部會，沒選機關 -> 加總該部會下所有資料
-                titleText = selectedMinistry + " (全體)";
-
-                // 找出該部會所有計畫
-                const ministryProjects = allDataPageA.filter(d => d['所屬部會'] === selectedMinistry);
-
-                // 針對國防部做特殊處理 (加總時需注意 0901/0902 是否需要強制校正)
-                // 為了簡化與保持一致性，這裡我們直接累加該部會所有計畫的金額
-                // 如果是國防部，手動檢查是否包含 0902 開頭的，若有則視為機密預算加總
-                if (selectedMinistry === '國防部') {
-                    // 國防部特殊邏輯：加總 0901 (本部) + 0902 (所屬)
-                    const statsMND = calculateAgencyStats('國防部');
-                    const statsSub = calculateAgencyStats('國防部所屬');
-                    totalBudget = statsMND.totalBudget + statsSub.totalBudget;
-                    totalCut = statsMND.totalCut + statsSub.totalCut;
-                    totalFreeze = statsMND.totalFreeze + statsSub.totalFreeze;
-                } else {
-                    // 一般部會：直接遍歷 A 表與 B 表
-                    ministryProjects.forEach(p => {
-                        totalBudget += parseMoney(p['預算金額']);
-                    });
-
-                    // 找出該部會的審查結果 (B表)
-                    const ministryReviews = allDataPageB.filter(r => r['所屬部會'] === selectedMinistry || ministryProjects.some(p => p['主管機關'] === r['主管機關']));
-                    // 注意：B表可能沒有所屬部會欄位，需透過主管機關比對，或直接比對計畫編號
-                    // 更安全的做法：遍歷 B 表，若其主管機關屬於該部會則加總
-
-                    // 建立該部會的機關清單
-                    const agenciesInMinistry = [...new Set(ministryProjects.map(p => p['主管機關']))];
-
-                    allDataPageB.forEach(r => {
-                        if (agenciesInMinistry.includes(r['主管機關'])) {
-                            totalCut += parseMoney(r['刪減金額']);
-                            totalFreeze += parseMoney(r['凍結金額']);
-                        }
-                    });
-                }
-
-            } else {
-                // [情境 1] 兩個都沒選 -> 加總資料庫所有資料 (中央政府總預算)
-                titleText = "中央政府總預算案 (全體)";
-
-                // 預算總額 (A表)
-                // 注意：這裡直接加總 A 表可能會漏掉國防部強制校正的差額，建議手動校正國防部
-                // 但為了效能，我們先直接加總，若有國防部再補差額
-                let rawTotalA = 0;
-                allDataPageA.forEach(p => rawTotalA += parseMoney(p['預算金額']));
-
-                // 國防部校正：(17.5億 + 5596億) - (資料庫中實際的國防加總)
-                // 這樣做比較複雜，簡單做法：直接加總 A 表，假設國防部資料已在 A 表完整 (若不完整則會少算)
-                // 根據先前邏輯，0902 只有兩筆，所以這裡必須手動加上「看不見的機密預算」
-
-                // 計算目前資料庫中 0901 和 0902 的總額
-                const mndExisting = allDataPageA.filter(p => {
-                    const id = String(p['計畫編號']).trim();
-                    return id.startsWith('0901') || id.startsWith('0902');
-                }).reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
-
-                const mndTarget = 1750857000 + 559611869000; // 國防部正確總額
-                const diff = mndTarget - mndExisting;
-
-                totalBudget = rawTotalA + (diff > 0 ? diff : 0); // 補上差額
-
-                // 刪減凍結總額 (B表)
-                allDataPageB.forEach(r => {
-                    totalCut += parseMoney(r['刪減金額']);
-                    totalFreeze += parseMoney(r['凍結金額']);
-                });
-            }
-
-            // --- 繪圖數據準備 ---
-            const totalPass = totalBudget - totalCut - totalFreeze;
-            const pctPass = (totalBudget > 0) ? (totalPass / totalBudget * 100).toFixed(1) : 0;
-            const pctCut = (totalBudget > 0) ? (totalCut / totalBudget * 100).toFixed(1) : 0;
-            const pctFreeze = (totalBudget > 0) ? (totalFreeze / totalBudget * 100).toFixed(1) : 0;
-
-            // 更新文字說明
-            captionEl.innerHTML = `
-                <span style="color:#086788; font-weight:bold;">${titleText}</span> 總預算：${formatCurrency(totalBudget)}<br>
-                通過：<b>${pctPass}%</b> | 
-                <span style="color:#E74C3C">刪減：<b>${pctCut}%</b> (${formatCurrency(totalCut)})</span> | 
-                <span style="color:#F0C808">凍結：<b>${pctFreeze}%</b> (${formatCurrency(totalFreeze)})</span>
-            `;
-
-            // 繪製圖表
-            const ctx = document.getElementById('chartBudgetPageReview').getContext('2d');
-            if (chartBudgetPageReview) chartBudgetPageReview.destroy();
-
-            chartBudgetPageReview = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['審查結果'],
-                    datasets: [
-                        { label: '通過', data: [totalPass], backgroundColor: '#086788', barThickness: 50 },
-                        { label: '凍結', data: [totalFreeze], backgroundColor: '#F0C808', barThickness: 50 },
-                        { label: '刪減', data: [totalCut], backgroundColor: '#E74C3C', barThickness: 50 }
-                    ]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { stacked: true, display: false, max: totalBudget },
-                        y: { stacked: true, display: false }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: tooltipCurrencyCallback
-                    }
-                }
-            });
-        }
-
         // [v117] Date Format Helper
         function formatGoogleDate(raw) {
             if (typeof raw === 'string' && raw.startsWith('Date(')) {
