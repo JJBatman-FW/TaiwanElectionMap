@@ -1782,7 +1782,6 @@
         <h1 onclick="showPage('home')">中央政府總預算觀測站</h1>
         <nav>
             <button id="nav-home" onclick="showPage('home')">首頁</button>
-            <button id="nav-budget" onclick="showPage('page-budget')">預算審查</button>
             <button id="nav-legislator" onclick="showPage('page-legislator')">立委把關</button>
             <button onclick="window.open('https://www.cna.com.tw/topic/newstopic/3958.aspx', '_blank')">相關新聞</button>
         </nav>
@@ -1820,19 +1819,55 @@
 
             <div class="content-block">
                 <div class="article-text">
-                    <p>中央政府總預算包含成千上百工作計畫，我們立法院公報內容，嘗試計算各項工作計畫的刪凍金額，並分成工作計畫與立委2個部分，可讓讀者查詢關心的議題預算金額與工作內容，或是了解各立委提案情形。</p>
-                    <p>目前呈現在網頁上的金額數字皆是透過立法院公報內容進行計算，可能出現誤差，最終法定預算金額仍依以主計總處公布為主。</p>
+                    <p>中央政府總預算包含成千上百工作計畫，透過下方互動式圖表，您可以切換不同部會與機關，查看其預算審查的最新進度（通過、凍結、刪減比例）。</p>
                 </div>
-                <div class="card" style="padding-bottom: 2.5rem;">
-                    <h3>總預算審查比例概況</h3>
-                    <div style="height: 100px; margin-bottom: 2rem;"><canvas id="chartStatusB"></canvas></div>
-                    <div style="text-align:center; font-size:0.95rem; color:#666; margin-bottom:2rem; font-weight:500;">
-                        說明：此圖表包含各工作計畫刪減與部會通案刪減之總和。</div>
-                    <div class="btn-group" style="margin-top:0; border-top:2px solid #f0f0f0; padding-top:2rem;">
-                        <button class="big-btn btn-a" onclick="showPage('page-budget')">開始搜尋<br>預算與審查內容</button>
-                        <button class="big-btn btn-c" onclick="showPage('page-legislator')">開始搜尋<br>立委把關紀錄</button>
+                <div class="card" style="margin-bottom: 2rem;">
+                    <h3>各機關審查結果分析</h3>
+                    <div class="ministry-filters">
+                        <select id="bp-filter-ministry" class="ministry-select" onchange="updateBudgetPageReview()">
+                            <option value="">請選擇所屬部會</option>
+                        </select>
+                        <select id="bp-filter-unit" class="ministry-select" onchange="updateBudgetPageReview()">
+                            <option value="">請選擇主管機關 (全部)</option>
+                        </select>
+                    </div>
+                    <div style="padding: 10px 20px;">
+                        <div id="bp-review-caption"
+                            style="text-align:center; color:#666; font-size:0.9rem; margin-top:10px; margin-bottom:10px;">
+                            請選擇機關以查看審查結果比例
+                        </div>
+                        <div class="chart-container" style="position: relative; height:180px; width:100%;">
+                            <canvas id="chartBudgetPageReview"></canvas>
+                        </div>
+                        <div id="agency-project-list"></div>
+                        <div id="agency-pagination" class="pagination-container"></div>
                     </div>
                 </div>
+            </div>
+
+            <div class="content-block">
+                <div class="article-text">
+                    <p>除了查看機關整體數據，您也可以直接輸入關鍵字（例如：TPASS、無人機、潛艦...），快速搜尋特定的預算項目或工作計畫。</p>
+                </div>
+
+                <h2 class="section-title">預算計畫搜尋</h2>
+                <div class="search-wrapper">
+                    <input type="text" class="search-input-lg" placeholder="輸入關鍵字 (如: TPASS)..."
+                        oninput="handleSearchBudget(this.value)">
+                    <div id="trending-area" style="margin-top: 12px; font-size: 0.9rem; color: #666; display: none;">
+                        大家都在關心：<span id="trending-list"></span>
+                    </div>
+                </div>
+
+                <div id="search-summary" class="search-summary-bar"></div>
+
+                <div id="results-container-budget">
+                    <p align="center" style="color:#999; padding:30px; font-size:1.1rem;">請輸入關鍵字開始搜尋...</p>
+                </div>
+                <div id="pagination-budget" class="pagination-container"></div>
+            </div>
+
+            <div class="content-block">
                 <div class="ranking-container">
                     <div class="card rank-column">
                         <h3>部會機關 Top 5</h3>
@@ -1861,10 +1896,7 @@
 
             <div class="content-block">
                 <div class="article-text">
-                    <p>另外，我們也整理了今年總預算案編列情形提供讀者參考。</p>
-                    <p>115年度總預算案受新版財劃法釋出財源給地方的影響，歲入共編列新台幣2兆8623億元，較114年度大幅減少3025億元。</p>
-                    <p>歲出編列則為3兆350億元，較114年度預算增加1100億，是近10年總預算案歲出編列第2高的金額。</p>
-                    <p>歲出為各項工作計畫的支出，但不包含償還債務；歲入則是為支應個工作計畫所籌措的財源，不包含舉債和前一年度歲計剩餘。</p>
+                    <p>另外，我們也整理了今年總預算案編列情形提供讀者參考。115年度總預算案受新版財劃法釋出財源給地方的影響，歲入共編列新台幣2兆8623億元...</p>
                 </div>
                 <div class="card">
                     <h3>歷年預算案歲出比較</h3>
@@ -1872,16 +1904,12 @@
                 </div>
 
                 <div class="article-text">
-                    <p>歲出編列時會依據其業務性質做科目分類，也就是「政事別」。根據「歲出政事別科目歸類原則與範圍」規定，政事別科目區分為大分類、中分類、業務計畫3個層次，其中大分類包括一般政務、國防、經濟發展、教育科學文化等9大項目。
-                    </p>
-                    <p>今年占比最多8318億元用於社會福利、5566億元用於教育科學文化、5488億元用於國防、4275億元用於經濟發展。其中國防支出增加最多、教育科學文化支出最少。</p>
+                    <p>歲出編列時會依據其業務性質做科目分類，也就是「政事別」。根據「歲出政事別科目歸類原則與範圍」規定...</p>
                 </div>
                 <div class="card">
                     <h3>115 年度預算案分配概況</h3>
                     <div class="bill-container">
-                        <div class="bill-visuals">
-                            <canvas id="chartAllocation"></canvas>
-                        </div>
+                        <div class="bill-visuals"><canvas id="chartAllocation"></canvas></div>
                         <svg id="pointer-layer" class="bill-svg-layer">
                             <defs>
                                 <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
@@ -1897,6 +1925,7 @@
                     </div>
                     <div id="chartAllocationLegend" class="chart-legend"></div>
                 </div>
+
                 <div id="ministry-stats-card" class="card">
                     <h3>部會預算詳細分析</h3>
                     <div class="ministry-filters">
@@ -1923,64 +1952,16 @@
                                     <div id="val-growth" class="m-stat-val">-</div>
                                 </div>
                             </div>
-                            <div style="height: 250px;">
-                                <canvas id="chartMinistryBar"></canvas>
-                            </div>
+                            <div style="height: 250px;"><canvas id="chartMinistryBar"></canvas></div>
                         </div>
                         <div style="border-left: 2px solid #f0f0f0; padding-left: 20px;">
                             <h4 style="text-align:center; margin-top:0; color:var(--primary-color);">預算分配比例</h4>
-                            <div style="height: 250px;">
-                                <canvas id="chartMinistryPie"></canvas>
-                            </div>
+                            <div style="height: 250px;"><canvas id="chartMinistryPie"></canvas></div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <section id="page-budget" class="page-section">
-            <h2 class="section-title">預算計畫與審查結果搜尋</h2>
-            <div id="demo-badge-budget" class="demo-mode-badge" style="text-align:center;">⚠️ 測試資料模式：僅能搜尋「測試」或「國防」</div>
-            <div class="search-wrapper">
-                <input type="text" class="search-input-lg" placeholder="..." oninput="handleSearchBudget(this.value)">
-
-                <div id="trending-area" style="margin-top: 12px; font-size: 0.9rem; color: #666; display: none;">
-                    大家都在關心：<span id="trending-list"></span>
-                </div>
-            </div>
-            <div id="results-container-budget">
-                <p align="center" style="color:#999; padding:30px; font-size:1.1rem;">請輸入關鍵字開始搜尋...</p>
-            </div>
-            <div id="pagination-budget" class="pagination-container"></div>
-            <div class="card" style="margin-bottom: 2rem;">
-                <h3>各機關審查結果分析</h3>
-                <div class="ministry-filters">
-                    <select id="bp-filter-ministry" class="ministry-select" onchange="updateBudgetPageReview()">
-                        <option value="">請選擇所屬部會</option>
-                    </select>
-                    <select id="bp-filter-unit" class="ministry-select" onchange="updateBudgetPageReview()">
-                        <option value="">請選擇主管機關 (全部)</option>
-                    </select>
-                </div>
-                <div style="padding: 10px 20px;">
-                    <div style="height: 120px;">
-                        <canvas id="chartBudgetPageReview"></canvas>
-                    </div>
-                    <div id="bp-review-caption"
-                        style="text-align:center; color:#666; font-size:0.9rem; margin-top:10px;">
-                        請選擇機關以查看審查結果比例
-                    </div>
-                    <div class="chart-container" style="position: relative; height:180px; width:100%;">
-                        <canvas id="chartBudgetPageReview"></canvas>
-                    </div>
-
-                    <div id="agency-project-list">
-                    </div>
-                    <div id="agency-pagination" class="pagination-container"></div>
-                </div>
-            </div>
-        </section>
-
         <section id="page-legislator" class="page-section">
             <h2 class="section-title">立委把關紀錄</h2>
             <div id="demo-badge-leg" class="demo-mode-badge" style="text-align:center;">⚠️ 測試資料模式</div>
@@ -2624,74 +2605,6 @@
                 }
             };
             mainChartsRendered = true;
-        }
-
-        // [v175 新增] 首頁總預算圖表 (邏輯同步工作分頁：A表算總額+國防校正、B表算刪凍)
-        function renderHomeStatusChart() {
-            // 1. 計算總預算 (來源 Page A + 國防部強制校正)
-            let rawTotalA = 0;
-            // 計算目前資料庫中 0901 和 0902 的總額
-            let mndExisting = 0;
-
-            allDataPageA.forEach(p => {
-                const amt = parseMoney(p['預算金額']);
-                rawTotalA += amt;
-
-                const id = String(p['計畫編號'] || '').trim();
-                if (id.startsWith('0901') || id.startsWith('0902')) {
-                    mndExisting += amt;
-                }
-            });
-
-            // 國防部正確總額 (本部 17.5億 + 所屬 5596億)
-            const mndTarget = 1750857000 + 559611869000;
-            const diff = mndTarget - mndExisting;
-
-            // 最終總預算 (A表總和 + 補上國防部差額)
-            const totalBudget = rawTotalA + (diff > 0 ? diff : 0);
-
-            // 2. 計算刪減與凍結 (來源 Page B)
-            let totalCut = 0;
-            let totalFreeze = 0;
-
-            allDataPageB.forEach(r => {
-                totalCut += parseMoney(r['刪減金額']);
-                totalFreeze += parseMoney(r['凍結金額']);
-            });
-
-            // 3. 計算通過金額
-            const totalPass = totalBudget - totalCut - totalFreeze;
-
-            // 4. 繪製圖表
-            const ctxStatus = document.getElementById('chartStatusB');
-            if (ctxStatus) {
-                if (chartStatusInstance) { chartStatusInstance.destroy(); }
-
-                chartStatusInstance = new Chart(ctxStatus.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['總體審查結果'],
-                        datasets: [
-                            { label: '通過', data: [totalPass], backgroundColor: '#086788', barThickness: 40 },
-                            { label: '凍結', data: [totalFreeze], backgroundColor: '#F0C808', barThickness: 40 },
-                            { label: '刪減', data: [totalCut], backgroundColor: '#E74C3C', barThickness: 40 }
-                        ]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { stacked: true, display: false, max: totalBudget }, // 設定 max 確保比例正確
-                            y: { stacked: true, display: false }
-                        },
-                        plugins: {
-                            legend: { position: 'top' },
-                            tooltip: tooltipCurrencyCallback
-                        }
-                    }
-                });
-            }
         }
         // --- 4. UI & Data Functions ---
         function showPage(pageId) {
@@ -3819,8 +3732,10 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            loadTrending();
-            renderMainCharts();
+            loadTrending(); // 載入熱搜
+            renderMainCharts(); // 渲染首頁靜態圖表 (歷年比較、分配概況)
+
+            // 1. 抓取所有資料
             Promise.all([
                 fetchData('page-a', true),
                 fetchData('page-b', true),
@@ -3829,20 +3744,24 @@
             ]).then(() => {
                 if (!isDemoMode && allDataPageA.length > 5) {
 
-                    // 1. 初始化部會分析 (首頁)
+                    // 2. 初始化功能 (現在全部都在首頁了)
+
+                    // A. 初始化「部會詳細分析」選單 (原本首頁底部的)
                     initMinistrySection();
 
-                    // 2. 初始化搜尋頁儀表板 (分頁)
+                    // B. 初始化「各機關審查結果分析」選單 (新移入的)
                     initBudgetPageFilters();
 
-                    // 3. [v175 新增] 繪製首頁總審查圖表 (確保 A、B 表都到位才畫)
-                    renderHomeStatusChart();
+                    // C. 預設顯示全國總審查概況 (透過 updateBudgetPageReview 執行)
+                    // (注意：因為我們移除了 renderHomeStatusChart，改用這個函式來負責畫這張圖)
+                    // initBudgetPageFilters 裡面已經會呼叫一次 updateBudgetPageReview，所以這裡不用重複呼叫
 
                 } else {
+                    // Demo 模式
                     document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
-
-                    // 如果是 Demo 模式，也可以嘗試畫圖 (使用 Mock Data)
-                    renderHomeStatusChart();
+                    // 嘗試初始化選單以顯示 Mock Data
+                    initMinistrySection();
+                    initBudgetPageFilters();
                 }
             });
         });
