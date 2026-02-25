@@ -1639,17 +1639,17 @@
                     </div>
 
                     <div class="modal-analysis-section">
-                        <div class="analysis-title">本計畫佔比分析</div>
+                        <div class="analysis-title">本計畫占比分析</div>
                         <div class="modal-charts-grid" id="analysis-normal">
                             <div class="mini-chart-box">
-                                <h4>所屬機關佔比</h4>
+                                <h4>所屬機關占比</h4>
                                 <div style="height:120px;"><canvas id="chartModalPlanRatio"></canvas></div>
                                 <p id="caption-plan-ratio"
                                     style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;">本計畫金額 vs
                                     主管機關總預算</p>
                             </div>
                             <div class="mini-chart-box">
-                                <h4>各用途項目佔比</h4>
+                                <h4>各用途項目占比</h4>
                                 <div style="height:250px;"><canvas id="chartModalCatRatio"></canvas></div>
                                 <p id="caption-cat-ratio"
                                     style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;">
@@ -1660,25 +1660,25 @@
                         <div id="analysis-military" class="modal-charts-grid"
                             style="display:none; grid-template-columns: 1fr;">
                             <div class="mini-chart-box">
-                                <h4>所屬機關佔比（國防部所屬）</h4>
+                                <h4>所屬機關占比（國防部所屬）</h4>
                                 <div style="height:120px;"><canvas id="chartMilMndRatio"></canvas></div>
                                 <p id="caption-mil-mnd-ratio"
                                     style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;"></p>
                             </div>
                             <div class="mini-chart-box">
-                                <h4 id="title-mil-unit-ratio">所屬機關佔比</h4>
+                                <h4 id="title-mil-unit-ratio">所屬機關占比</h4>
                                 <div style="height:120px;"><canvas id="chartMilUnitRatio"></canvas></div>
                                 <p id="caption-mil-unit-ratio"
                                     style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;"></p>
                             </div>
                             <div class="mini-chart-box">
-                                <h4>國防部用途佔比</h4>
+                                <h4>國防部用途占比</h4>
                                 <div style="height:250px;"><canvas id="chartMilMndCat"></canvas></div>
                                 <p id="caption-mil-mnd-cat"
                                     style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;"></p>
                             </div>
                             <div class="mini-chart-box">
-                                <h4>單位用途佔比</h4>
+                                <h4>單位用途占比</h4>
                                 <div style="height:250px;"><canvas id="chartMilUnitCat"></canvas></div>
                                 <p id="caption-mil-unit-cat"
                                     style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;"></p>
@@ -3358,12 +3358,12 @@
                     // A. 計算國防部/所屬 總體數據
                     let targetPrefix = '0902';
                     let mndForceValue = 559611869000;
-                    let mndLabel = "所屬機關佔比（國防部所屬）";
+                    let mndLabel = "所屬機關占比（國防部所屬）";
 
                     if (cleanId.startsWith('0901')) {
                         targetPrefix = '0901';
                         mndForceValue = 1750857000;
-                        mndLabel = "所屬機關佔比（國防部）";
+                        mndLabel = "所屬機關占比（國防部）";
                     }
 
                     const mndProjects = allDataPageA.filter(p => String(p['計畫編號']).trim().startsWith(targetPrefix));
@@ -3382,13 +3382,13 @@
                     // B. 計算該「單位」(Unit) 的總體數據
                     let unitTotalBudget = 0;
                     let unitUsageTotal = { '人事費': 0, '業務費': 0, '設備及投資': 0, '獎補助費': 0, '債務費': 0, '預備金': 0 };
-                    let unitLabel = `所屬機關佔比（${agencyName}）`;
+                    let unitLabel = `所屬機關占比（${agencyName}）`;
 
                     if (isMndSpecial) {
                         // 特殊單位視同整個國防部所屬
                         unitTotalBudget = mndTotalBudget;
                         unitUsageTotal = mndUsageTotal;
-                        unitLabel = "所屬機關佔比（全機關）";
+                        unitLabel = "所屬機關占比（全機關）";
                     } else {
                         // 根據編號後兩碼判斷同單位 (例如 0902xx...99)
                         const suffix = id.slice(-2);
@@ -3404,12 +3404,12 @@
 
                     // --- 繪製 4 張軍事圖表 ---
 
-                    // Chart 1: 國防部/所屬 佔比
+                    // Chart 1: 國防部/所屬 占比
                     if (chartMilMndRatio) chartMilMndRatio.destroy();
                     const ctx1 = document.getElementById('chartMilMndRatio').getContext('2d');
                     const box1 = document.getElementById('chartMilMndRatio').parentElement.parentElement;
                     box1.querySelector('h4').innerText = mndLabel;
-                    document.getElementById('caption-mil-mnd-ratio').innerText = `本計畫金額占${mndLabel.replace('所屬機關佔比（', '').replace('）', '')}預算 ${(mndTotalBudget > 0 ? (projectBudget / mndTotalBudget * 100).toFixed(2) : 0)}%`;
+                    document.getElementById('caption-mil-mnd-ratio').innerText = `本計畫金額占${mndLabel.replace('所屬機關占比（', '').replace('）', '')}預算 ${(mndTotalBudget > 0 ? (projectBudget / mndTotalBudget * 100).toFixed(2) : 0)}%`;
 
                     chartMilMndRatio = new Chart(ctx1, {
                         type: 'bar',
@@ -3423,11 +3423,11 @@
                         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
                     });
 
-                    // Chart 2: 單位 佔比
+                    // Chart 2: 單位 占比
                     if (chartMilUnitRatio) chartMilUnitRatio.destroy();
                     const ctx2 = document.getElementById('chartMilUnitRatio').getContext('2d');
                     const unitRatio = (unitTotalBudget > 0) ? (projectBudget / unitTotalBudget * 100).toFixed(2) : 0;
-                    document.getElementById('caption-mil-unit-ratio').innerText = `本計畫金額占${unitLabel.replace('所屬機關佔比（', '').replace('）', '')}預算 ${unitRatio}%`;
+                    document.getElementById('caption-mil-unit-ratio').innerText = `本計畫金額占${unitLabel.replace('所屬機關占比（', '').replace('）', '')}預算 ${unitRatio}%`;
 
                     chartMilUnitRatio = new Chart(ctx2, {
                         type: 'bar',
@@ -3441,7 +3441,7 @@
                         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
                     });
 
-                    // Chart 3: 國防部 用途別佔比
+                    // Chart 3: 國防部 用途別占比
                     if (chartMilMndCat) chartMilMndCat.destroy();
                     const ctx3 = document.getElementById('chartMilMndCat').getContext('2d');
                     const catLabels = ['人事費', '業務費', '設備及投資', '獎補助費', '債務費', '預備金'];
@@ -3474,7 +3474,7 @@
                     });
                     document.getElementById('caption-mil-mnd-cat').innerText = "請滑鼠移至(或點擊)該類別的整行區域即可查看";
 
-                    // Chart 4: 單位 用途別佔比
+                    // Chart 4: 單位 用途別占比
                     if (chartMilUnitCat) chartMilUnitCat.destroy();
                     const ctx4 = document.getElementById('chartMilUnitCat').getContext('2d');
                     const unitCatRest = catLabels.map(k => (unitUsageTotal[k] || 0) - (projectUsage[k] || 0));
