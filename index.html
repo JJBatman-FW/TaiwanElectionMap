@@ -2074,6 +2074,7 @@
         let agencyCurrentPage = 1;
 
         // 1. 更新圖表 + 準備分頁資料
+        // 1. 更新圖表 + 準備分頁資料 (v190: 包含過濾 0 元計畫與修復變數問題)
         function updateBudgetPageReview() {
             const ministrySelect = document.getElementById('bp-filter-ministry');
             const unitSelect = document.getElementById('bp-filter-unit');
@@ -2098,6 +2099,7 @@
                 unitSelect.value = "";
             }
 
+            // [重要] 這裡就是剛剛不小心被覆蓋掉的變數宣告
             const selectedAgency = unitSelect.value;
             const captionEl = document.getElementById('bp-review-caption');
 
@@ -2106,12 +2108,12 @@
             let titleText = "";
             let filteredProjects = [];
 
-            // [資料篩選邏輯]
+            // [資料篩選邏輯] - 已加入 0 元計畫過濾
             if (selectedAgency) {
                 const stats = calculateAgencyStats(selectedAgency);
                 totalBudget = stats.totalBudget; totalCut = stats.totalCut; totalFreeze = stats.totalFreeze;
                 titleText = selectedAgency;
-                filteredProjects = allDataPageA.filter(d => d['主管機關'] === selectedAgency && !d['計畫編號'].endsWith('000000'));
+                filteredProjects = allDataPageA.filter(d => d['主管機關'] === selectedAgency && !d['計畫編號'].endsWith('000000') && parseMoney(d['預算金額']) > 0);
             } else if (selectedMinistry) {
                 titleText = selectedMinistry + " (全體)";
                 const ministryProjects = allDataPageA.filter(d => d['所屬部會'] === selectedMinistry);
@@ -2121,7 +2123,7 @@
                     totalBudget = statsMND.totalBudget + statsSub.totalBudget;
                     totalCut = statsMND.totalCut + statsSub.totalCut;
                     totalFreeze = statsMND.totalFreeze + statsSub.totalFreeze;
-                    filteredProjects = ministryProjects.filter(d => !d['計畫編號'].endsWith('000000'));
+                    filteredProjects = ministryProjects.filter(d => !d['計畫編號'].endsWith('000000') && parseMoney(d['預算金額']) > 0);
                 } else {
                     ministryProjects.forEach(p => { totalBudget += parseMoney(p['預算金額']); });
                     const agenciesInMinistry = [...new Set(ministryProjects.map(p => p['主管機關']))];
@@ -2131,14 +2133,14 @@
                             totalFreeze += parseMoney(r['凍結金額']);
                         }
                     });
-                    filteredProjects = ministryProjects.filter(d => !d['計畫編號'].endsWith('000000'));
+                    filteredProjects = ministryProjects.filter(d => !d['計畫編號'].endsWith('000000') && parseMoney(d['預算金額']) > 0);
                 }
             } else {
                 titleText = "中央政府總預算案 (全體)";
                 // 全國總覽時，資料太多，不顯示列表
                 filteredProjects = [];
 
-                // (省略全國金額計算，保持原本邏輯即可)
+                // (全國金額計算)
                 let rawTotalA = 0; allDataPageA.forEach(p => rawTotalA += parseMoney(p['預算金額']));
                 const mndExisting = allDataPageA.filter(p => (String(p['計畫編號']).trim().startsWith('0901') || String(p['計畫編號']).trim().startsWith('0902'))).reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
                 const mndTarget = 1750857000 + 559611869000;
@@ -2180,7 +2182,7 @@
                 }
             });
 
-            // --- [關鍵修改] 呼叫分頁渲染系統 ---
+            // --- 呼叫分頁渲染系統 ---
             currentAgencyProjects = filteredProjects; // 存入全域變數
             agencyCurrentPage = 1; // 重置為第一頁
             renderAgencyPagedResults(); // 開始渲染
@@ -3193,15 +3195,16 @@
             }
             // 過濾邏輯
             currentSearchResults = allDataPageA.filter(r => {
-                // A. 基礎過濾：排除統刪與機關層級 (保留 v165 邏輯)
+                // A. 基礎過濾：排除統刪與機關層級
                 const amt = parseMoney(r['預算金額']);
                 const planId = (r['計畫編號'] || '').trim();
                 const planName = (r['計畫名稱'] || '');
                 const isAgencySummary = planId.includes('000000'); // 包含000000即排除
                 const isGeneralCut = planName.includes('統刪');
 
-                // 預算需 > 0，或有相關審查紀錄 (這裡簡化為只看預算，因為通常預算0也不會搜它)
-                if (amt === 0 && !r['刪減金額']) return false;
+                // [修正] 嚴格排除預算為 0 的計畫 (不再管是否有刪減紀錄，一律隱藏)
+                if (amt === 0) return false;
+
                 if (isAgencySummary || isGeneralCut) return false;
 
                 // B. 準備搜尋文字 (納入分支計畫)
@@ -3209,11 +3212,6 @@
                 let rawText = (planName + (r['工作內容'] || '') + (r['主管機關'] || '') + (r['分支計畫'] || '')).toLowerCase();
 
                 // C. 排除項目符號 (Clean Text)
-                // Regex 說明：
-                // \d+\.      -> 1. 2. 10.
-                // \(\d+\)    -> (1) (2)
-                // <\d+>      -> <1> <2>
-                // （\d+）    -> （1）（2）全形括號
                 const cleanText = rawText.replace(/(\d+\.|\(\d+\)|<\d+>|（\d+）)/g, '');
 
                 // D. 比對關鍵字
