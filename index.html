@@ -81,8 +81,16 @@
             letter-spacing: 0.5px;
         }
 
-        #sidebar-toggle-btn { top: 15px; left: 15px; }
-        #legend-toggle-btn { bottom: 15px; right: 15px; background-color: #34a853; }
+        #sidebar-toggle-btn {
+            top: 15px;
+            left: 15px;
+        }
+
+        #legend-toggle-btn {
+            bottom: 15px;
+            right: 15px;
+            background-color: #34a853;
+        }
 
         /* 🦾 手風琴分類樣式 */
         .accordion-header {
@@ -103,14 +111,50 @@
             transition: background-color 0.2s ease;
             box-sizing: border-box;
         }
-        .accordion-header:hover { background-color: #f1f3f4; }
-        .accordion-header::after { content: '▼'; font-size: 10px; color: #777; transition: transform 0.2s ease; }
-        .accordion-header.active { background-color: #e8f0fe; color: #1a73e8; border-color: #d2e3fc; }
-        .accordion-header.active::after { transform: rotate(180deg); color: #1a73e8; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.25s ease-out; padding-left: 8px; margin-bottom: 4px; }
 
-        .layer-option { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: #444; }
-        .layer-option input { margin-right: 8px; transform: scale(1.1); }
+        .accordion-header:hover {
+            background-color: #f1f3f4;
+        }
+
+        .accordion-header::after {
+            content: '▼';
+            font-size: 10px;
+            color: #777;
+            transition: transform 0.2s ease;
+        }
+
+        .accordion-header.active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            border-color: #d2e3fc;
+        }
+
+        .accordion-header.active::after {
+            transform: rotate(180deg);
+            color: #1a73e8;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease-out;
+            padding-left: 8px;
+            margin-bottom: 4px;
+        }
+
+        .layer-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .layer-option input {
+            margin-right: 8px;
+            transform: scale(1.1);
+        }
 
         /* ⚡ 下拉選單 CSS */
         .honeycomb-select {
@@ -129,11 +173,19 @@
             box-sizing: border-box;
             transition: border-color 0.2s;
         }
-        .honeycomb-select:focus { border-color: #1a73e8; }
+
+        .honeycomb-select:focus {
+            border-color: #1a73e8;
+        }
 
         .leaflet-marker-icon.custom-clean-town-marker {
-            background: transparent !important; border: none !important; box-shadow: none !important;
-            padding: 0 !important; margin: 0 !important; width: 0px !important; height: 0px !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 0px !important;
+            height: 0px !important;
         }
 
         /* 🏆 獎盃特效 */
@@ -144,32 +196,66 @@
             cursor: pointer;
             text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.4);
         }
+
         @keyframes bounceTrophy {
-            0% { transform: translate(-50%, -50%) scale(0.9); }
-            100% { transform: translate(-50%, -60%) scale(1.1); }
+            0% {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+
+            100% {
+                transform: translate(-50%, -60%) scale(1.1);
+            }
         }
 
         path.leaflet-interactive:focus,
         path.leaflet-interactive:active,
         path.leaflet-interactive:focus-visible,
         .leaflet-container :focus {
-            outline: none !important; outline-width: 0px !important; box-shadow: none !important;
+            outline: none !important;
+            outline-width: 0px !important;
+            box-shadow: none !important;
         }
 
         @media (max-width: 767px) {
-            .ui-toggle-btn { display: flex; }
+            .ui-toggle-btn {
+                display: flex;
+            }
+
             #google-sidebar {
-                top: 0; left: 0; width: 290px; height: 100vh; max-height: 100vh;
-                border-radius: 0 12px 12px 0; transform: translateX(-105%); opacity: 0;
+                top: 0;
+                left: 0;
+                width: 290px;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0 12px 12px 0;
+                transform: translateX(-105%);
+                opacity: 0;
                 box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
             }
+
             #custom-legend-box {
-                bottom: 80px; right: 15px; width: calc(100% - 30px); max-width: 320px;
-                transform: translateY(130%); opacity: 0; pointer-events: auto;
+                bottom: 80px;
+                right: 15px;
+                width: calc(100% - 30px);
+                max-width: 320px;
+                transform: translateY(130%);
+                opacity: 0;
+                pointer-events: auto;
             }
-            #google-sidebar.mobile-open { transform: translateX(0); opacity: 1; }
-            #custom-legend-box.mobile-open { transform: translateY(0); opacity: 1; }
-            .leaflet-control-search { width: 100% !important; }
+
+            #google-sidebar.mobile-open {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            #custom-legend-box.mobile-open {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .leaflet-control-search {
+                width: 100% !important;
+            }
         }
     </style>
 </head>
@@ -184,7 +270,9 @@
     <div id="google-sidebar">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div style="font-weight:bold; color:#333; font-size:13px;">🔍 快速尋找村里</div>
-            <button class="mobile-close-inner" style="display:none; background:none; border:none; font-size:20px; cursor:pointer;" onclick="toggleSidebarMobile()">✕</button>
+            <button class="mobile-close-inner"
+                style="display:none; background:none; border:none; font-size:20px; cursor:pointer;"
+                onclick="toggleSidebarMobile()">✕</button>
         </div>
         <script>
             if (window.innerWidth < 768) { document.querySelector('.mobile-close-inner').style.display = 'block'; }
@@ -192,7 +280,8 @@
 
         <div id="integrated-search-container" style="margin-bottom: 18px; min-height: 32px;"></div>
 
-        <div style="font-size:16px; font-weight:bold; color:#1a73e8; margin-bottom:14px; border-bottom:2px solid #1a73e8; padding-bottom:6px;">
+        <div
+            style="font-size:16px; font-weight:bold; color:#1a73e8; margin-bottom:14px; border-bottom:2px solid #1a73e8; padding-bottom:6px;">
             🗺️ 台北市選舉數據指標
         </div>
 
@@ -228,7 +317,9 @@
     <div id="custom-legend-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div id="legend-title" style="font-weight: bold; color: #333;">📊 地圖數據指標</div>
-            <button class="legend-close-inner" style="display:none; background:none; border:none; font-size:16px; cursor:pointer; color:#777;" onclick="toggleLegendMobile()">✕</button>
+            <button class="legend-close-inner"
+                style="display:none; background:none; border:none; font-size:16px; cursor:pointer; color:#777;"
+                onclick="toggleLegendMobile()">✕</button>
         </div>
         <script>
             if (window.innerWidth < 768) { document.querySelector('.legend-close-inner').style.display = 'block'; }
@@ -262,8 +353,9 @@
         const DISTRICT_MAPPING = {
             "士林北投": ["黃瀞瑩", "林延鳳", "張斯綱", "侯漢廷", "汪志冰", "鍾佩玲", "陳政忠", "林杏兒", "陳賢蔚", "陳慈慧", "林世宗", "陳重文"],
             "內湖南港": ["李彥秀", "陳宥丞", "游淑慧", "李明賢", "何孟樺", "闕枚莎", "王孝維", "李建昌", "吳世正"],
-            "松山信義": ["徐巧芯", "王鴻薇", "張文潔", "許淑華", "詹為元", "許家蓓", "秦慧珠", "戴錫欽", "洪健益"], 
-            "中山大同": [], "中正萬華": [], "大安文山": []
+            "松山信義": ["徐巧芯", "王鴻薇", "張文潔", "許淑華", "詹為元", "許家蓓", "秦慧珠", "戴錫欽", "洪健益"],
+            "中山大同": ["王世堅", "陳炳甫", "顏若芳", "柳采葳", "葉林傳", "林珍羽", "陳怡君", "林亮君"],
+            "中正萬華": ["應曉薇", "郭昭巖", "吳沛憶", "洪婉臻", "吳志剛", "徐立信", "鍾小平", "劉耀仁"], "大安文山": []
         };
 
         // ==================== 2. 著色公式核心 ====================
@@ -282,8 +374,8 @@
             let finalColor = `hsl(0, 0%, ${95 - (weight * 70)}%)`;
 
             const LOCAL_PARTY_DB = {
-                "國民黨": ["張斯綱", "汪志冰", "林杏兒", "陳重文", "李彥秀", "游淑慧", "李明賢", "闕枚莎", "吳世正", "徐巧芯", "王鴻薇", "秦慧珠", "詹為元", "戴錫欽", "王欣儀", "陳炳甫", "柳采葳", "鍾小平", "應曉薇", "郭昭巖"],
-                "民進黨": ["林延鳳", "鍾佩玲", "陳賢蔚", "陳慈慧", "林世宗", "高嘉瑜", "何孟樺", "王孝維", "李建昌", "張文傑", "許淑華", "許家蓓", "洪健益", "張文潔", "簡舒培", "趙怡翔", "陳聖文", "顏若芳", "林亮君", "劉耀仁", "吳沛憶", "洪婉臻"],
+                "國民黨": ["張斯綱", "汪志冰", "林杏兒", "陳重文", "李彥秀", "游淑慧", "李明賢", "闕枚莎", "吳世正", "徐巧芯", "王鴻薇", "秦慧珠", "詹為元", "戴錫欽", "王欣儀", "陳炳甫", "柳采葳", "葉林傳", "鍾小平", "應曉薇", "郭昭巖", "吳志剛"],
+                "民進黨": ["林延鳳", "鍾佩玲", "陳賢蔚", "陳慈慧", "林世宗", "高嘉瑜", "何孟樺", "王孝維", "李建昌", "張文傑", "許淑華", "許家蓓", "洪健益", "張文潔", "簡舒培", "趙怡翔", "陳聖文", "王世堅", "顏若芳", "陳怡君", "劉耀仁", "吳沛憶", "洪婉臻"],
                 "民眾黨": ["黃瀞瑩", "陳宥丞", "林珍羽", "張志豪"]
             };
 
@@ -663,10 +755,10 @@
                         popupHtml += `<div style="font-size:11px; font-weight:bold; color:#1a73e8; margin:8px 0 2px 0;">🏛️ 大選完整得票率對照</div>`;
                         popupHtml += `<table style="width:100%; font-size:10px; border-collapse:collapse; text-align:center;">
                             <tr style="color:#666; background:#f1f3f4;"><th>年份/職位</th><th>國民黨</th><th>民進黨</th><th>民眾/無</th></tr>`;
-                        
+
                         window.YEARS.forEach(y => {
                             popupHtml += `<tr style="border-bottom:1px solid #eee;"><td>20${y} 市長</td><td>${(d[`國民黨20${y}催票率`] || 0).toFixed(1)}%</td><td>${(d[`民進黨20${y}催票率`] || 0).toFixed(1)}%</td><td>${(d[`無黨籍20${y}催票率`] || 0).toFixed(1)}%</td></tr>`;
-                            
+
                             // ⚡【安全防呆 3】：修復對照表跨行政區時，.toFixed(1) 造成的崩潰
                             if (y === "22") {
                                 let kmtRate = d["議員_中國國民黨2022催票率"];
@@ -745,8 +837,8 @@
                     <div style="display:flex; justify-content:space-between; font-size:10px; color:#777; font-weight:bold; margin-top:5px; padding-left:50px;"><span>0% (膠著)</span><span>${globalMaxMargin.toFixed(1)}% (強勢)</span></div>`;
             } else {
                 const LOCAL_PARTY_DB = {
-                    "國民黨": ["張斯綱", "汪志冰", "林杏兒", "陳重文", "李彥秀", "游淑慧", "李明賢", "闕枚莎", "吳世正", "徐巧芯", "王鴻薇", "秦慧珠", "詹為元", "戴錫欽", "王欣儀", "陳炳甫", "柳采葳", "鍾小平", "應曉薇", "郭昭巖"],
-                    "民進黨": ["林延鳳", "鍾佩玲", "陳賢蔚", "陳慈慧", "林世宗", "高嘉瑜", "何孟樺", "王孝維", "李建昌", "張文傑", "許淑華", "許家蓓", "洪健益", "張文潔", "簡舒培", "趙怡翔", "陳聖文", "王閔生", "顏若芳", "林亮君", "劉耀仁", "吳沛憶", "洪婉臻"],
+                    "國民黨": ["張斯綱", "汪志冰", "林杏兒", "陳重文", "李彥秀", "游淑慧", "李明賢", "闕枚莎", "吳世正", "徐巧芯", "王鴻薇", "秦慧珠", "詹為元", "戴錫欽", "王欣儀", "陳炳甫", "柳采葳", "葉林傳", "鍾小平", "應曉薇", "郭昭巖", "吳志剛"],
+                    "民進黨": ["林延鳳", "鍾佩玲", "陳賢蔚", "陳慈慧", "林世宗", "高嘉瑜", "何孟樺", "王孝維", "李建昌", "張文傑", "許淑華", "許家蓓", "洪健益", "張文潔", "簡舒培", "趙怡翔", "陳聖文", "王世堅", "顏若芳", "陳怡君", "劉耀仁", "吳沛憶", "洪婉臻"],
                     "民眾黨": ["黃瀞瑩", "陳宥丞", "林珍羽", "張志豪"]
                 };
 
