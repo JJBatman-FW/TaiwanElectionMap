@@ -25,7 +25,7 @@
             background-color: #f8f9fa;
         }
 
-        /* 🦾 側邊欄控制面板 UI（電腦版預設展開） */
+        /* 🦾 側邊欄控制面板 UI */
         #google-sidebar {
             position: fixed;
             top: 20px;
@@ -44,7 +44,7 @@
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
-        /* 📊 右下角智慧圖例面板（電腦版預設展開） */
+        /* 📊 右下角智慧圖例面板 */
         #custom-legend-box {
             position: fixed;
             bottom: 30px;
@@ -61,14 +61,13 @@
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
-        /* 📱 手機版與電腦版通用的控制按鈕（電腦版隱藏） */
+        /* 📱 手機版與電腦版通用的控制按鈕 */
         .ui-toggle-btn {
             position: fixed;
             background-color: #1a73e8;
             color: white;
             border: none;
             border-radius: 24px;
-            /* 膠囊圓角 */
             padding: 0 16px;
             height: 44px;
             font-size: 15px;
@@ -77,22 +76,13 @@
             cursor: pointer;
             z-index: 10000;
             display: none;
-            /* 電腦版預設不顯示 */
             align-items: center;
             justify-content: center;
             letter-spacing: 0.5px;
         }
 
-        #sidebar-toggle-btn {
-            top: 15px;
-            left: 15px;
-        }
-
-        #legend-toggle-btn {
-            bottom: 15px;
-            right: 15px;
-            background-color: #34a853;
-        }
+        #sidebar-toggle-btn { top: 15px; left: 15px; }
+        #legend-toggle-btn { bottom: 15px; right: 15px; background-color: #34a853; }
 
         /* 🦾 手風琴分類樣式 */
         .accordion-header {
@@ -113,123 +103,73 @@
             transition: background-color 0.2s ease;
             box-sizing: border-box;
         }
+        .accordion-header:hover { background-color: #f1f3f4; }
+        .accordion-header::after { content: '▼'; font-size: 10px; color: #777; transition: transform 0.2s ease; }
+        .accordion-header.active { background-color: #e8f0fe; color: #1a73e8; border-color: #d2e3fc; }
+        .accordion-header.active::after { transform: rotate(180deg); color: #1a73e8; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.25s ease-out; padding-left: 8px; margin-bottom: 4px; }
 
-        .accordion-header:hover {
-            background-color: #f1f3f4;
-        }
+        .layer-option { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: #444; }
+        .layer-option input { margin-right: 8px; transform: scale(1.1); }
 
-        .accordion-header::after {
-            content: '▼';
-            font-size: 10px;
-            color: #777;
-            transition: transform 0.2s ease;
-        }
-
-        .accordion-header.active {
-            background-color: #e8f0fe;
-            color: #1a73e8;
-            border-color: #d2e3fc;
-        }
-
-        .accordion-header.active::after {
-            transform: rotate(180deg);
-            color: #1a73e8;
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.25s ease-out;
-            padding-left: 8px;
-            margin-bottom: 4px;
-        }
-
-        .layer-option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            cursor: pointer;
-            font-size: 13px;
+        /* ⚡ 下拉選單 CSS */
+        .honeycomb-select {
+            width: 100%;
+            height: 38px;
+            padding: 0 10px;
+            font-size: 14px;
             color: #444;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            outline: none;
+            font-family: inherit;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
         }
+        .honeycomb-select:focus { border-color: #1a73e8; }
 
-        .layer-option input {
-            margin-right: 8px;
-            transform: scale(1.1);
-        }
-
-        /* 透明化行政區文字的原生外層容器 */
         .leaflet-marker-icon.custom-clean-town-marker {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 0px !important;
-            height: 0px !important;
+            background: transparent !important; border: none !important; box-shadow: none !important;
+            padding: 0 !important; margin: 0 !important; width: 0px !important; height: 0px !important;
         }
 
-        /* ⚡ 拔除 Focus 黑色外框 */
+        /* 🏆 獎盃特效 */
+        .trophy-icon-style {
+            font-size: 20px;
+            text-align: center;
+            animation: bounceTrophy 1.8s infinite alternate;
+            cursor: pointer;
+            text-shadow: 0px 1px 3px rgba(0,0,0,0.4);
+        }
+        @keyframes bounceTrophy {
+            0% { transform: translate(-50%, -50%) scale(0.9); }
+            100% { transform: translate(-50%, -60%) scale(1.1); }
+        }
+
         path.leaflet-interactive:focus,
         path.leaflet-interactive:active,
         path.leaflet-interactive:focus-visible,
         .leaflet-container :focus {
-            outline: none !important;
-            outline-width: 0px !important;
-            box-shadow: none !important;
+            outline: none !important; outline-width: 0px !important; box-shadow: none !important;
         }
 
-        /* ------------------------------------------
-           📱 RWD 手機版關鍵微調（當螢幕寬度小於 768px）
-           ------------------------------------------ */
         @media (max-width: 767px) {
-
-            /* 1. 顯示切換按鈕 */
-            .ui-toggle-btn {
-                display: flex;
-            }
-
-            /* 2. 側邊欄在手機版改為滿版懸浮，預設靠左隱藏 (X軸位移 -105%) */
+            .ui-toggle-btn { display: flex; }
             #google-sidebar {
-                top: 0;
-                left: 0;
-                width: 290px;
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0 12px 12px 0;
-                transform: translateX(-105%);
-                opacity: 0;
+                top: 0; left: 0; width: 290px; height: 100vh; max-height: 100vh;
+                border-radius: 0 12px 12px 0; transform: translateX(-105%); opacity: 0;
                 box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
             }
-
-            /* 3. 圖例面板在手機版靠右下，預設靠下隱藏 (Y軸位移 120%) */
             #custom-legend-box {
-                bottom: 80px;
-                /* 移高一點避開按鈕 */
-                right: 15px;
-                width: calc(100% - 30px);
-                max-width: 320px;
-                transform: translateY(130%);
-                opacity: 0;
-                pointer-events: auto;
-                /* 允許手機版收合時點擊內容 */
+                bottom: 80px; right: 15px; width: calc(100% - 30px); max-width: 320px;
+                transform: translateY(130%); opacity: 0; pointer-events: auto;
             }
-
-            /* 4. 當被賦予 .mobile-open 類別時，平滑滑入顯示 */
-            #google-sidebar.mobile-open {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            #custom-legend-box.mobile-open {
-                transform: translateY(0);
-                opacity: 1;
-            }
-
-            /* 修正手機上 leaflet 搜尋框寬度 */
-            .leaflet-control-search {
-                width: 100% !important;
-            }
+            #google-sidebar.mobile-open { transform: translateX(0); opacity: 1; }
+            #custom-legend-box.mobile-open { transform: translateY(0); opacity: 1; }
+            .leaflet-control-search { width: 100% !important; }
         }
     </style>
 </head>
@@ -244,49 +184,62 @@
     <div id="google-sidebar">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div style="font-weight:bold; color:#333; font-size:13px;">🔍 快速尋找村里</div>
-            <button class="mobile-close-inner"
-                style="display:none; background:none; border:none; font-size:20px; cursor:pointer;"
-                onclick="toggleSidebarMobile()">✕</button>
+            <button class="mobile-close-inner" style="display:none; background:none; border:none; font-size:20px; cursor:pointer;" onclick="toggleSidebarMobile()">✕</button>
         </div>
         <script>
-            // 如果是手機版，顯示內置關閉叉叉
-            if (window.innerWidth < 768) {
-                document.querySelector('.mobile-close-inner').style.display = 'block';
-            }
+            if(window.innerWidth < 768) { document.querySelector('.mobile-close-inner').style.display = 'block'; }
         </script>
 
         <div id="integrated-search-container" style="margin-bottom: 18px; min-height: 32px;"></div>
 
-        <div
-            style="font-size:16px; font-weight:bold; color:#1a73e8; margin-bottom:14px; border-bottom:2px solid #1a73e8; padding-bottom:6px;">
+        <div style="font-size:16px; font-weight:bold; color:#1a73e8; margin-bottom:14px; border-bottom:2px solid #1a73e8; padding-bottom:6px;">
             🗺️ 台北市選舉數據指標
         </div>
 
-        <div class="accordion-header active" onclick="toggleAccordion(this)">📊 三黨拉鋸戰略地圖</div>
+        <div class="accordion-header active" onclick="toggleAccordion(this)">📊 市長：三黨拉鋸戰略地圖</div>
         <div class="accordion-content" id="bivariate-options-box" style="max-height: 250px;"></div>
 
-        <div class="accordion-header" onclick="toggleAccordion(this)">📈 個別政黨歷年催票率</div>
+        <div class="accordion-header" onclick="toggleAccordion(this)">📈 市長：個別政黨歷年催票率</div>
         <div class="accordion-content" id="rate-options-box"></div>
+
+        <div class="accordion-header" onclick="toggleAccordion(this)">🎖️ 議員：政黨催票率 (2022)</div>
+        <div class="accordion-content" id="councilor-options-box"></div>
+
+        <div class="accordion-header" onclick="toggleAccordion(this)">🏆 議員：個人催票率 (連動選區選單)</div>
+        <div class="accordion-content" id="ind-councilor-options-box">
+            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第一步：請選擇議員選區</div>
+            <select id="area-dropdown" class="honeycomb-select" onchange="updateCandidateDropdown()">
+                <option value="">-- 請選擇選區 --</option>
+                <option value="士林北投">第1選區（士林、北投）</option>
+                <option value="內湖南港">第2選區（內湖、南港）</option>
+                <option value="松山信義">第3選區（松山、信義）</option>
+                <option value="中山大同">第4選區（中山、大同）</option>
+                <option value="中正萬華">第5選區（中正、萬華）</option>
+                <option value="大安文山">第6選區（大安、文山）</option>
+            </select>
+
+            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第二步：請選擇議員候選人</div>
+            <select id="candidate-dropdown" class="honeycomb-select" onchange="onCandidateSelectChanged()" disabled>
+                <option value="">-- 請先選擇選區 --</option>
+            </select>
+        </div>
     </div>
 
     <div id="custom-legend-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div id="legend-title" style="font-weight: bold; color: #333;">📊 地圖數據指標</div>
-            <button class="legend-close-inner"
-                style="display:none; background:none; border:none; font-size:16px; cursor:pointer; color:#777;"
-                onclick="toggleLegendMobile()">✕</button>
+            <button class="legend-close-inner" style="display:none; background:none; border:none; font-size:16px; cursor:pointer; color:#777;" onclick="toggleLegendMobile()">✕</button>
         </div>
         <script>
-            if (window.innerWidth < 768) {
-                document.querySelector('.legend-close-inner').style.display = 'block';
-            }
+            if(window.innerWidth < 768) { document.querySelector('.legend-close-inner').style.display = 'block'; }
         </script>
         <div id="legend-content"></div>
     </div>
 
     <script>
-        // ==================== 1. 設定雲端即時資料來源 ====================
-        const REAL_GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTxL7RpmKAZf4BhIZ1bZNTKnopzukUAJRmQQ2seSIe6nVPXb6w23ss5n8zC0RwHh0uaINbhvU8_bhdz/pub?gid=1933270908&single=true&output=csv";
+        // ==================== 1. 全域變數與雲端來源 ====================
+        const MAYOR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTxL7RpmKAZf4BhIZ1bZNTKnopzukUAJRmQQ2seSIe6nVPXb6w23ss5n8zC0RwHh0uaINbhvU8_bhdz/pub?gid=1933270908&single=true&output=csv";
+        const COUNCILOR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTxL7RpmKAZf4BhIZ1bZNTKnopzukUAJRmQQ2seSIe6nVPXb6w23ss5n8zC0RwHh0uaINbhvU8_bhdz/pub?gid=1635341179&single=true&output=csv";
         const GEOJSON_URL = "https://gist.githubusercontent.com/JJBatman-FW/dfc0d93794df27e14e8d26954a644d70/raw/83a95e1764abc97e5b6ae73659ccb4ee134ecc74/TP.json";
 
         const TOWN_CENTERS = {
@@ -297,29 +250,51 @@
         };
 
         const INITIAL_CENTER = [25.06, 121.58];
-        const INITIAL_ZOOM = window.innerWidth < 768 ? 11 : 12; // 📱 手機版自動縮小一階視野
+        const INITIAL_ZOOM = window.innerWidth < 768 ? 11 : 12;
 
         let map, electionData = {}, geojsonRawData;
         let currentActiveLayer = null;
         let globalMaxRate = 0, globalMaxMargin = 0;
         let layerInstances = {};
         let lastFocusedLayer = null;
+        let activeTrophyGroup = L.layerGroup(); 
 
-        // 📱 手機版專用控制邏輯
+        const DISTRICT_MAPPING = {
+            "士林北投": ["黃瀞瑩", "林延鳳", "張斯綱", "侯漢廷", "汪志冰", "鍾佩玲", "陳政忠", "林杏兒", "陳賢蔚", "陳慈慧", "林世宗", "陳重文"],
+            "內湖南港": [], "松山信義": [], "中山大同": [], "中正萬華": [], "大安文山": []
+        };
+
+        // ==================== 2. 【核心定位修正】：著色公式強制排在最頂端 ====================
+        function getBivariateColor(leader, margin) {
+            let weight = Math.min(margin / globalMaxMargin, 1.0);
+            if (margin <= 5.0) weight = weight * 0.4;
+            if (leader === '國民黨') return `hsl(210, 85%, ${95 - (weight * 60)}%)`;
+            if (leader === '民進黨') return `hsl(130, 80%, ${95 - (weight * 65)}%)`;
+            return `hsl(0, 0%, ${95 - (weight * 70)}%)`;
+        }
+
+        function getSinglePartyColor(party, val, isIndividualCandidate) {
+            let maxDenominator = isIndividualCandidate ? window.MAX_COUNCILOR_RATE : globalMaxRate;
+            let weight = Math.min(val / maxDenominator, 1.0);
+            
+            if (party.includes("國民黨") || party.includes("張斯綱") || party.includes("汪志冰") || party.includes("林杏兒") || party.includes("陳重文")) return `hsl(210, 85%, ${95 - (weight * 60)}%)`;
+            if (party.includes("民進黨") || party.includes("民主進步黨") || party.includes("林延鳳") || party.includes("鍾佩玲") || party.includes("陳賢蔚") || party.includes("陳慈慧") || party.includes("林世宗")) return `hsl(130, 80%, ${95 - (weight * 65)}%)`;
+            if (party.includes("民眾黨") || party.includes("黃瀞瑩")) return `hsl(180, 85%, ${90 - (weight * 55)}%)`; 
+            if (party.includes("侯漢廷") || party.includes("新黨")) return `hsl(15, 90%, ${90 - (weight * 55)}%)`; 
+            return `hsl(0, 0%, ${95 - (weight * 70)}%)`;
+        }
+
+        // 手機選單控制
         function toggleSidebarMobile() {
             const sidebar = document.getElementById('google-sidebar');
             const toggleBtn = document.getElementById('sidebar-toggle-btn');
             sidebar.classList.toggle('mobile-open');
-
-            if (sidebar.classList.contains('mobile-open')) {
-                toggleBtn.innerHTML = "✕ 關閉";
-                toggleBtn.style.backgroundColor = "#d9534f"; // 展開時變紅色提示關閉
+            if(sidebar.classList.contains('mobile-open')) {
+                toggleBtn.innerHTML = "✕ 關閉"; toggleBtn.style.backgroundColor = "#d9534f";
                 document.getElementById('custom-legend-box').classList.remove('mobile-open');
-                document.getElementById('legend-toggle-btn').innerHTML = "▲ 圖例";
-                document.getElementById('legend-toggle-btn').style.backgroundColor = "#34a853";
+                document.getElementById('legend-toggle-btn').innerHTML = "▲ 圖例"; document.getElementById('legend-toggle-btn').style.backgroundColor = "#34a853";
             } else {
-                toggleBtn.innerHTML = "≡ 選單";
-                toggleBtn.style.backgroundColor = "#1a73e8"; // 收合時恢復藍色
+                toggleBtn.innerHTML = "≡ 選單"; toggleBtn.style.backgroundColor = "#1a73e8";
             }
         }
 
@@ -327,20 +302,15 @@
             const legend = document.getElementById('custom-legend-box');
             const toggleBtn = document.getElementById('legend-toggle-btn');
             legend.classList.toggle('mobile-open');
-
-            if (legend.classList.contains('mobile-open')) {
-                toggleBtn.innerHTML = "✕ 關閉";
-                toggleBtn.style.backgroundColor = "#d9534f";
+            if(legend.classList.contains('mobile-open')) {
+                toggleBtn.innerHTML = "✕ 關閉"; toggleBtn.style.backgroundColor = "#d9534f";
                 document.getElementById('google-sidebar').classList.remove('mobile-open');
-                document.getElementById('sidebar-toggle-btn').innerHTML = "≡ 選單";
-                document.getElementById('sidebar-toggle-btn').style.backgroundColor = "#1a73e8";
+                document.getElementById('sidebar-toggle-btn').innerHTML = "≡ 選單"; toggleBtn.style.backgroundColor = "#1a73e8";
             } else {
-                toggleBtn.innerHTML = "▲ 圖例";
-                toggleBtn.style.backgroundColor = "#34a853";
+                toggleBtn.innerHTML = "▲ 圖例"; toggleBtn.style.backgroundColor = "#34a853";
             }
         }
 
-        // 手風琴分類切換
         function toggleAccordion(element) {
             const isAlreadyActive = element.classList.contains("active");
             document.querySelectorAll(".accordion-header").forEach(h => {
@@ -354,19 +324,17 @@
             }
         }
 
-        // 初始化地圖
         function initMap() {
-            // ⚡【核心修改】：將預設的 zoomControl 設為 false 關閉，改由下方手動指定位置
             map = L.map('map', { center: INITIAL_CENTER, zoom: INITIAL_ZOOM, zoomControl: false });
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap &copy; CARTO'
             }).addTo(map);
 
-            // ⚡【核心修改】：手動建立一個放在「右上角 (topright)」的放大縮小按鈕
-            // 💡 如果是手機版，通常手指雙擊或兩指縮放就很流暢，我們這裡可以加個判定，只在電腦版（大螢幕）才在右上角顯示這個按鈕
             if (window.innerWidth >= 768) {
                 L.control.zoom({ position: 'topright' }).addTo(map);
             }
+
+            activeTrophyGroup.addTo(map);
 
             for (let town in TOWN_CENTERS) {
                 L.marker(TOWN_CENTERS[town], {
@@ -377,9 +345,7 @@
                 }).addTo(map);
             }
 
-            map.on('popupclose', function () {
-                resetFocusState();
-            });
+            map.on('popupclose', function() { resetFocusState(); });
         }
 
         function resetFocusState() {
@@ -390,206 +356,300 @@
             map.flyTo(INITIAL_CENTER, INITIAL_ZOOM, { animate: true, duration: 1.2 });
         }
 
-        // ==================== 2. 用 JavaScript 異步串接下載雲端雙資料 ====================
         async function loadDashboardData() {
             initMap();
             try {
-                console.log("正在從雲端同步最新村里幾何圖資與 Google 試算表選舉數據...");
+                console.log("正在從雲端同時同步村里圖資、市長數據與議員數據...");
                 const geoResponse = await fetch(GEOJSON_URL);
                 geojsonRawData = await geoResponse.json();
 
-                Papa.parse(REAL_GOOGLE_SHEET_CSV_URL, {
-                    download: true, header: true, skipEmptyLines: true,
-                    complete: function (results) {
-                        processElectionData(results.data);
-                        buildControlUI();
-                        setupSearchControl();
+                Promise.all([
+                    fetch(MAYOR_CSV_URL).then(res => res.text()),
+                    fetch(COUNCILOR_CSV_URL).then(res => res.text())
+                ]).then(([mayorCsv, councilorCsv]) => {
+                    
+                    const mayorResults = Papa.parse(mayorCsv, { header: true, skipEmptyLines: true }).data;
+                    const councilorResults = Papa.parse(councilorCsv, { header: true, skipEmptyLines: true }).data;
 
-                        const defaultRadio = document.querySelector('input[name="map_layer_toggle"]:checked');
-                        if (defaultRadio) {
-                            switchLayer(defaultRadio.value, defaultRadio.getAttribute('data-name'));
-                            const content = defaultRadio.closest('.accordion-content');
-                            if (content) content.style.maxHeight = content.scrollHeight + "px";
-                        }
+                    processAllElectionData(mayorResults, councilorResults);
+                    buildControlUI();
+                    setupSearchControl();
+
+                    const defaultRadio = document.querySelector('input[name="map_layer_toggle"]:checked');
+                    if (defaultRadio) {
+                        switchLayer(defaultRadio.value, defaultRadio.getAttribute('data-name'));
+                        const content = defaultRadio.closest('.accordion-content');
+                        if (content) content.style.maxHeight = content.scrollHeight + "px";
                     }
                 });
+
             } catch (err) {
                 alert("雲端資料同步失敗，請檢查網路連線或 Google 試算表發布設定！");
                 console.error(err);
             }
         }
 
-        // ==================== 3. 核心數據處理運算 ====================
-        function processElectionData(csvRows) {
+        function processAllElectionData(mayorRows, councilorRows) {
             let allRates = [], allMargins = [];
             let yearsSet = new Set();
-            let rawFields = [];
+            let mayorFields = [];
 
-            if (csvRows.length > 0) {
-                Object.keys(csvRows[0]).forEach(key => {
+            if (mayorRows.length > 0) {
+                Object.keys(mayorRows[0]).forEach(key => {
                     if (key.includes("催票率")) {
-                        rawFields.push(key);
+                        mayorFields.push(key);
                         let yr = key.match(/\d{4}/);
                         if (yr) yearsSet.add(yr[0].substring(2));
                     }
                 });
             }
+
             window.YEARS = Array.from(yearsSet).sort();
-            window.RAW_COLUMNS = rawFields;
+            window.MAYOR_COLUMNS = mayorFields;
+            window.COUNCILOR_COLUMNS = ["中國國民黨2022催票率", "民主進步黨2022催票率", "台灣民眾黨2022催票率"];
+            
+            window.ALL_CANDIDATES = [];
+            Object.values(DISTRICT_MAPPING).forEach(arr => window.ALL_CANDIDATES = window.ALL_CANDIDATES.concat(arr));
 
-            csvRows.forEach(row => {
-                let tName = String(row.TOWNNAME || '').trim();
-                let vName = String(row.VILLNAME || '').trim();
-                let key = tName + vName;
+            window.MAX_COUNCILOR_RATE = 0; 
+
+            mayorRows.forEach(row => {
+                let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
                 if (!key) return;
-
-                let processedRow = { ...row };
-                window.RAW_COLUMNS.forEach(col => {
-                    let val = String(row[col]).replace(/,/g, '').replace(/%/g, '');
-                    processedRow[col] = parseFloat(val) || 0;
-                    allRates.push(processedRow[col]);
+                electionData[key] = { ...row };
+                
+                window.MAYOR_COLUMNS.forEach(col => {
+                    let val = parseFloat(String(row[col]).replace(/,/g, '').replace(/%/g, '')) || 0;
+                    electionData[key][col] = val;
+                    allRates.push(val);
                 });
 
                 window.YEARS.forEach(yr => {
-                    let kmt = processedRow[`國民黨20${yr}催票率`] || 0;
-                    let dpp = processedRow[`民進黨20${yr}催票率`] || 0;
-                    let ind = processedRow[`無黨籍20${yr}催票率`] || 0;
-
+                    let kmt = electionData[key][`國民黨20${yr}催票率`] || 0;
+                    let dpp = electionData[key][`民進黨20${yr}催票率`] || 0;
+                    let ind = electionData[key][`無黨籍20${yr}催票率`] || 0;
                     let scores = { '國民黨': kmt, '民進黨': dpp, '無黨籍': ind };
                     let leader = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
                     let sortedVals = [kmt, dpp, ind].sort((a, b) => b - a);
                     let margin = sortedVals[0] - sortedVals[1];
 
-                    processedRow[`20${yr}_領先政黨`] = leader;
-                    processedRow[`20${yr}_領先差距`] = margin;
+                    electionData[key][`20${yr}_領先政黨`] = leader;
+                    electionData[key][`20${yr}_領先差距`] = margin;
                     allMargins.push(margin);
                 });
+            });
 
-                electionData[key] = processedRow;
+            councilorRows.forEach(row => {
+                let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
+                if (!key) return;
+
+                if (!electionData[key]) {
+                    electionData[key] = { TOWNNAME: row.TOWNNAME, VILLNAME: row.VILLNAME };
+                }
+
+                let totalVotes = parseFloat(String(row["投票人數"]).replace(/,/g, '')) || 0;
+
+                if (totalVotes > 0) {
+                    let kmtVotes = parseFloat(String(row["中國國民黨得票"]).replace(/,/g, '')) || 0;
+                    let kmtRate = (kmtVotes / totalVotes) * 100;
+                    electionData[key]["議員_中國國民黨2022催票率"] = kmtRate;
+                    allRates.push(kmtRate);
+
+                    let dppVotes = parseFloat(String(row["民主進步黨得票"]).replace(/,/g, '')) || 0;
+                    let dppRate = (dppVotes / totalVotes) * 100;
+                    electionData[key]["議員_民主進步黨2022催票率"] = dppRate;
+                    allRates.push(dppRate);
+
+                    let tppVotes = parseFloat(String(row["台灣民眾黨得票"]).replace(/,/g, '')) || 0;
+                    let tppRate = (tppVotes / totalVotes) * 100;
+                    electionData[key]["議員_台灣民眾黨2022催票率"] = tppRate;
+                    allRates.push(tppRate);
+
+                    let maxVotesInVillage = 0;
+                    let topCandidateInVillage = "";
+
+                    window.ALL_CANDIDATES.forEach(name => {
+                        if (row[`${name}得票`] !== undefined) {
+                            let indVotes = parseFloat(String(row[`${name}得票`]).replace(/,/g, '')) || 0;
+                            let indRate = (indVotes / totalVotes) * 100;
+                            
+                            electionData[key][`獨立議員_${name}`] = indRate;
+
+                            if (indRate > window.MAX_COUNCILOR_RATE) {
+                                window.MAX_COUNCILOR_RATE = indRate;
+                            }
+
+                            if (indVotes > maxVotesInVillage) {
+                                maxVotesInVillage = indVotes;
+                                topCandidateInVillage = name;
+                            }
+                        }
+                    });
+
+                    if(topCandidateInVillage) {
+                        electionData[key]["里內第一名議員"] = topCandidateInVillage;
+                    }
+
+                } else {
+                    window.COUNCILOR_COLUMNS.forEach(col => electionData[key][`議員_${col}`] = 0);
+                    window.ALL_CANDIDATES.forEach(name => electionData[key][`獨立議員_${name}`] = 0);
+                    electionData[key]["里內第一名議員"] = "";
+                }
             });
 
             globalMaxRate = Math.max(...allRates, 0);
             globalMaxMargin = Math.max(...allMargins, 0);
         }
 
-        function getBivariateColor(leader, margin) {
-            let weight = Math.min(margin / globalMaxMargin, 1.0);
-            if (margin <= 5.0) weight = weight * 0.4;
-            if (leader === '國民黨') return `hsl(210, 85%, ${95 - (weight * 60)}%)`;
-            if (leader === '民進黨') return `hsl(130, 80%, ${95 - (weight * 65)}%)`;
-            return `hsl(0, 0%, ${95 - (weight * 70)}%)`;
-        }
-
-        function getSinglePartyColor(party, val) {
-            let weight = Math.min(val / globalMaxRate, 1.0);
-            if (party.includes("國民黨")) return `hsl(210, 85%, ${95 - (weight * 60)}%)`;
-            if (party.includes("民進黨")) return `hsl(130, 80%, ${95 - (weight * 65)}%)`;
-            return `hsl(0, 0%, ${95 - (weight * 70)}%)`;
-        }
-
-        // ==================== 4. 動態建構選單 UI ====================
         function buildControlUI() {
             const bivBox = document.getElementById("bivariate-options-box");
             const rateBox = document.getElementById("rate-options-box");
+            const counBox = document.getElementById("councilor-options-box");
 
             window.YEARS.forEach((yr, idx) => {
-                let id = `bivariate_20${yr}`;
-                let name = `20${yr}年 三黨拉鋸激戰地圖`;
-                let checked = idx === 0 ? "checked" : "";
-
-                bivBox.innerHTML += `
-                    <label class="layer-option">
-                        <input type="radio" name="map_layer_toggle" value="${id}" data-name="${name}" ${checked}> ${name}
-                    </label>`;
+                let id = `bivariate_20${yr}`; let name = `20${yr}年 三黨拉鋸激戰地圖`; let checked = idx === 0 ? "checked" : "";
+                bivBox.innerHTML += `<label class="layer-option"><input type="radio" name="map_layer_toggle" value="${id}" data-name="${name}" ${checked}> ${name}</label>`;
                 createLeafletLayer(id, 'bivariate', yr, null, name);
             });
 
-            window.RAW_COLUMNS.forEach(col => {
+            window.MAYOR_COLUMNS.forEach(col => {
                 let id = `rate_${col.replace("催票率", "").replace("20", "_")}`;
-                rateBox.innerHTML += `
-                    <label class="layer-option">
-                        <input type="radio" name="map_layer_toggle" value="${id}" data-name="${col}"> ${col}
-                    </label>`;
+                rateBox.innerHTML += `<label class="layer-option"><input type="radio" name="map_layer_toggle" value="${id}" data-name="${col}"> ${col}</label>`;
                 createLeafletLayer(id, 'party_rate', null, col, col);
+            });
+
+            window.COUNCILOR_COLUMNS.forEach(col => {
+                let id = `councilor_${col.replace("催票率", "").replace("20", "_")}`; let displayName = col.replace("催票率", "即時催票率");
+                counBox.innerHTML += `<label class="layer-option"><input type="radio" name="map_layer_toggle" value="${id}" data-name="議員：${displayName}"> 2022 議員 ${col.substring(0,5)}</label>`;
+                createLeafletLayer(id, 'councilor_rate', null, `議員_${col}`, displayName);
+            });
+
+            // 預先建好所有個人議員圖層實例
+            window.ALL_CANDIDATES.forEach(name => {
+                let id = `ind_councilor_${name}`;
+                createLeafletLayer(id, 'individual_candidate', null, `獨立議員_${name}`, `2022 議員 ${name} 獨立催票率`);
             });
 
             document.querySelectorAll('input[name="map_layer_toggle"]').forEach(radio => {
                 radio.addEventListener('change', function () {
+                    document.getElementById('area-dropdown').value = "";
+                    const candDrop = document.getElementById('candidate-dropdown');
+                    candDrop.innerHTML = '<option value="">-- 請先選擇選區 --</option>';
+                    candDrop.disabled = true;
+
                     switchLayer(this.value, this.getAttribute('data-name'));
-                    // 📱 手機端選完項目後，自動把選單收回，方便看地圖
-                    if (window.innerWidth < 768) {
-                        toggleSidebarMobile();
-                    }
+                    if(window.innerWidth < 768) { toggleSidebarMobile(); }
                 });
             });
+        }
+
+        function updateCandidateDropdown() {
+            const areaValue = document.getElementById('area-dropdown').value;
+            const candDrop = document.getElementById('candidate-dropdown');
+            candDrop.innerHTML = '';
+
+            if (!areaValue) {
+                candDrop.innerHTML = '<option value="">-- 請先選擇選區 --</option>';
+                candDrop.disabled = true;
+                return;
+            }
+
+            const candidates = DISTRICT_MAPPING[areaValue];
+            if (candidates && candidates.length > 0) {
+                candDrop.innerHTML = '<option value="">-- 請選擇議員候選人 --</option>';
+                candidates.sort().forEach(name => {
+                    candDrop.innerHTML += `<option value="${name}">${name}</option>`;
+                });
+                candDrop.disabled = false;
+            } else {
+                candDrop.innerHTML = '<option value="">（該選區試算表數據建置中）</option>';
+                candDrop.disabled = true;
+            }
+        }
+
+        function onCandidateSelectChanged() {
+            const candidateName = document.getElementById('candidate-dropdown').value;
+            if (!candidateName) return;
+
+            document.querySelectorAll('input[name="map_layer_toggle"]').forEach(radio => {
+                radio.checked = false;
+            });
+
+            const layerId = `ind_councilor_${candidateName}`;
+            const layerName = `2022 議員 ${candidateName} 獨立催票率`;
+            switchLayer(layerId, layerName);
+
+            if(window.innerWidth < 768) { toggleSidebarMobile(); }
         }
 
         function createLeafletLayer(layerId, type, year, field, layerName) {
             let geoJsonInstance = L.geoJson(geojsonRawData, {
                 style: function (feature) {
-                    let tName = String(feature.properties.TOWNNAME || '').trim();
-                    let vName = String(feature.properties.VILLNAME || '').trim();
-                    let geoKey = tName + vName;
-                    let fillColor = "#eeeeee";
+                    let key = String(feature.properties.TOWNNAME || '').trim() + String(feature.properties.VILLNAME || '').trim();
+                    let fillColor = "transparent", fillOpacity = 0, strokeColor = "#ffffff", strokeWidth = 0.4;
 
-                    if (electionData[geoKey]) {
-                        let d = electionData[geoKey];
+                    if (electionData[key]) {
+                        let d = electionData[key];
                         if (type === 'bivariate') {
                             fillColor = getBivariateColor(d[`20${year}_領先政黨`], d[`20${year}_領先差距`]);
+                            fillOpacity = 0.8;
                         } else {
-                            fillColor = getSinglePartyColor(field, d[field]);
+                            if (d[field] !== undefined && d[field] > 0) {
+                                let isIndividual = type === 'individual_candidate';
+                                fillColor = getSinglePartyColor(field, d[field], isIndividual);
+                                fillOpacity = 0.8; strokeColor = "#ffffff"; strokeWidth = 0.7;
+                            } else {
+                                strokeColor = "#e0e0e0"; 
+                            }
                         }
                     }
-                    return { fillColor: fillColor, color: '#ffffff', weight: 0.7, fillOpacity: 0.8 };
+                    return { fillColor: fillColor, color: strokeColor, weight: strokeWidth, fillOpacity: fillOpacity };
                 },
                 onEachFeature: function (feature, layer) {
                     let tName = String(feature.properties.TOWNNAME || '').trim();
                     let vName = String(feature.properties.VILLNAME || '').trim();
-                    let geoKey = tName + vName;
-                    feature.properties.search_name = tName + vName;
+                    let key = tName + vName;
 
-                    let popupHtml = `<div style="font-family:'Helvetica Neue',Arial,sans-serif; width:230px; padding:3px; color:#333;">
+                    let popupHtml = `<div style="font-family:'Helvetica Neue',Arial,sans-serif; width:250px; padding:3px; color:#333;">
                         <div style="font-size:14px; font-weight:bold; border-bottom:2px solid #555; padding-bottom:4px; margin-bottom:6px;">📍 ${tName} ➔ ${vName}</div>`;
 
-                    if (electionData[geoKey]) {
-                        let d = electionData[geoKey];
+                    if (electionData[key]) {
+                        let d = electionData[key];
                         if (type === 'bivariate') {
-                            let leader = d[`20${year}_領先政黨`];
-                            let margin = d[`20${year}_領先差距`];
-                            popupHtml += `<div style="margin-bottom:6px; font-size:12px;">🏆 <b>領先</b>: <span style="font-weight:bold; color:#d9534f;">${leader}</span> (+${margin.toFixed(2)}%)</div>`;
-                            if (margin <= 5.0) popupHtml += `<div style='background:#fff3cd; color:#856404; font-weight:bold; font-size:11px; padding:2px; border-radius:3px; margin-bottom:6px; text-align:center;'>⚠️ 激戰膠著區</div>`;
+                            let leader = d[`20${year}_領先政黨`]; let margin = d[`20${year}_領先差距`];
+                            popupHtml += `<div style="margin-bottom:6px; font-size:12px;">🏆 <b>市長領先</b>: <span style="font-weight:bold; color:#d9534f;">${leader}</span> (+${margin.toFixed(2)}%)</div>`;
+                        } else if (type === 'individual_candidate') {
+                            let candidateName = field.replace("獨立議員_", "");
+                            popupHtml += `<div style="font-size:12px; margin-bottom:4px;">🎖️ <b>${candidateName} 催票率</b>: <span style="font-weight:bold; color:#1a73e8;">${d[field].toFixed(2)}%</span></div>`;
+                            if (d["里內第一名議員"] === candidateName) {
+                                popupHtml += `<div style='background:#fff3cd; color:#856404; font-weight:bold; font-size:11px; padding:3px; border-radius:3px; margin-bottom:6px; text-align:center;'>🏆 本里得票最高候選人</div>`;
+                            } else {
+                                popupHtml += `<div style="font-size:11px; color:gray; margin-bottom:6px;">🥇 本里第一名: ${d["里內第一名議員"] || '無資料'}</div>`;
+                            }
                         } else {
-                            popupHtml += `<div style="font-size:12px; margin-bottom:4px;">📊 <b>${field}</b>: <span style="font-weight:bold; color:#0056b3;">${d[field].toFixed(2)}%</span></div>`;
+                            popupHtml += `<div style="font-size:12px; margin-bottom:6px;">📊 <b>當前指標</b>: <span style="font-weight:bold; color:#0056b3;">${(d[field]||0).toFixed(2)}%</span></div>`;
                         }
 
-                        let k_val = d[`國民黨20${year || '14'}催票率`] || 0;
-                        let d_val = d[`民進黨20${year || '14'}催票率`] || 0;
-                        let i_val = d[`無黨籍20${year || '14'}催票率`] || 0;
-
-                        popupHtml += `<div style="font-size:11px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:1px;"><span>🔵 國民黨</span><b>${k_val.toFixed(1)}%</b></div>
-                            <div style="width:100%; background:#e9ecef; height:5px; border-radius:2px; margin-bottom:4px;"><div style="width:${Math.min(k_val * 1.5, 100)}%; background:#1f77b4; height:5px; border-radius:2px;"></div></div>
-                            <div style="display:flex; justify-content:space-between; margin-bottom:1px;"><span>🟢 民進黨</span><b>${d_val.toFixed(1)}%</b></div>
-                            <div style="width:100%; background:#e9ecef; height:5px; border-radius:2px; margin-bottom:4px;"><div style="width:${Math.min(d_val * 1.5, 100)}%; background:#2ca02c; height:5px; border-radius:2px;"></div></div>
-                            <div style="display:flex; justify-content:space-between; margin-bottom:1px;"><span>⚪ 無黨籍</span><b>${i_val.toFixed(1)}%</b></div>
-                            <div style="width:100%; background:#e9ecef; height:5px; border-radius:2px;"><div style="width:${Math.min(i_val * 1.5, 100)}%; background:#7f7f7f; height:5px; border-radius:2px;"></div></div>
-                        </div>`;
-
-                        popupHtml += `<table style="width:100%; font-size:10px; border-collapse:collapse; margin-top:6px; border-top:1px solid #ddd; text-align:center;"><tr style="color:#777;"><th>年份</th><th>國民</th><th>民進</th><th>無黨</th></tr>`;
+                        popupHtml += `<div style="font-size:11px; font-weight:bold; color:#1a73e8; margin:8px 0 2px 0;">🏛️ 大選完整得票率對照</div>`;
+                        popupHtml += `<table style="width:100%; font-size:10px; border-collapse:collapse; text-align:center;">
+                            <tr style="color:#666; background:#f1f3f4;"><th>年份/職位</th><th>國民黨</th><th>民進黨</th><th>民眾/無</th></tr>`;
                         window.YEARS.forEach(y => {
-                            popupHtml += `<tr><td>20${y}</td><td>${(d[`國民黨20${y}催票率`] || 0).toFixed(1)}%</td><td>${(d[`民進黨20${y}催票率`] || 0).toFixed(1)}%</td><td>${(d[`無黨籍20${y}催票率`] || 0).toFixed(1)}%</td></tr>`;
+                            popupHtml += `<tr style="border-bottom:1px solid #eee;"><td>20${y} 市長</td><td>${(d[`國民黨20${y}催票率`] || 0).toFixed(1)}%</td><td>${(d[`民進黨20${y}催票率`] || 0).toFixed(1)}%</td><td>${(d[`無黨籍20${y}催票率`] || 0).toFixed(1)}%</td></tr>`;
+                            if (y === "22") {
+                                popupHtml += `<tr style="border-bottom:1px dotted #1a73e8; background-color:#f8f9fa; color:#666;"><td>2022 議員</td><td>${(d["議員_中國國民黨2022催票率"]||0).toFixed(1)}%</td><td>${(d["議員_民主進步黨2022催票率"]||0).toFixed(1)}%</td><td>${(d["議員_台灣民眾黨2022催票率"]||0).toFixed(1)}%</td></tr>`;
+                            }
                         });
                         popupHtml += `</table>`;
                     } else {
-                        popupHtml += `<span style='color:gray; font-size:12px;'>（無投票資料）</span>`;
+                        popupHtml += `<span style='color:gray; font-size:12px;'>（本區無投票資料）</span>`;
                     }
                     popupHtml += `</div>`;
-
+                    
                     layer.bindPopup(popupHtml, { closeOnClick: false, autoPan: true });
 
                     layer.on({
                         mouseover: function (e) {
-                            if (lastFocusedLayer === this || window.innerWidth < 768) return; // 📱 手機版停用 hover 亮線，避免手指誤觸體驗不佳
+                            if (lastFocusedLayer === this || window.innerWidth < 768) return;
                             this.setStyle({ color: '#333333', weight: 2.0 });
                         },
                         mouseout: function (e) {
@@ -597,10 +657,7 @@
                             geoJsonInstance.resetStyle(e.target);
                         },
                         click: function (e) {
-                            if (lastFocusedLayer && lastFocusedLayer !== this) {
-                                geoJsonInstance.resetStyle(lastFocusedLayer);
-                            }
-
+                            if (lastFocusedLayer && lastFocusedLayer !== this) { geoJsonInstance.resetStyle(lastFocusedLayer); }
                             lastFocusedLayer = this;
                             this.setStyle({ color: '#1a73e8', weight: 3.0, fillOpacity: 0.85 });
                             map.flyTo(e.latlng, window.innerWidth < 768 ? 14 : 15, { animate: true, duration: 1.2 });
@@ -615,12 +672,19 @@
             if (currentActiveLayer && map.hasLayer(currentActiveLayer)) {
                 map.removeLayer(currentActiveLayer);
             }
-            if (lastFocusedLayer) {
-                map.closePopup();
-                lastFocusedLayer = null;
-            }
+            
+            activeTrophyGroup.clearLayers();
+
+            if(lastFocusedLayer) { map.closePopup(); lastFocusedLayer = null; }
             currentActiveLayer = layerInstances[layerId];
-            currentActiveLayer.addTo(map);
+            
+            // ⚡【安全機制優化】：防範切換尚未建立的空圖層時造成崩潰
+            if (currentActiveLayer) {
+                currentActiveLayer.addTo(map);
+            } else {
+                console.warn(`圖層 ${layerId} 尚未就緒或為空資料選區。`);
+                return;
+            }
 
             const titleEl = document.getElementById('legend-title');
             const contentEl = document.getElementById('legend-content');
@@ -629,42 +693,76 @@
             if (layerId.includes("bivariate")) {
                 contentEl.innerHTML = `
                     <div style="font-size:11px; color:#555; margin-bottom:6px; line-height:1.4;">
-                        🎨 <b>顏色（誰第一）</b>：藍=國民黨、綠=民進黨、灰=無黨籍。<br>
-                        🌓 <b>深淺（拉開幅度）</b>：越白越膠著（激戰區），越深差距越大（鐵票倉）。
+                        🎨 <b>顏色</b>：藍=國民黨、綠=民進黨、灰=無黨籍。<br>
+                        🌓 <b>深淺</b>：越白越膠著，越深差距越大.
                     </div>
                     <div style="display:flex; flex-direction:column; gap:5px;">
-                        <div style="display:flex; align-items:center;">
-                            <span style="width:50px; font-size:11px;"><b>國民黨</b>:</span>
-                            <div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7fbff, #08306b);"></div>
-                        </div>
-                        <div style="display:flex; align-items:center;">
-                            <span style="width:50px; font-size:11px;"><b>民進黨</b>:</span>
-                            <div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7fcf0, #00441b);"></div>
-                        </div>
-                        <div style="display:flex; align-items:center;">
-                            <span style="width:50px; font-size:11px;"><b>無黨籍</b>:</span>
-                            <div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7f7f7, #252525);"></div>
-                        </div>
+                        <div style="display:flex; align-items:center;"><span style="width:50px; font-size:11px;"><b>國民黨</b>:</span><div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7fbff, #08306b);"></div></div>
+                        <div style="display:flex; align-items:center;"><span style="width:50px; font-size:11px;"><b>民進黨</b>:</span><div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7fcf0, #00441b);"></div></div>
+                        <div style="display:flex; align-items:center;"><span style="width:50px; font-size:11px;"><b>無黨籍</b>:</span><div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7f7f7, #252525);"></div></div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:10px; color:#777; font-weight:bold; margin-top:5px; padding-left:50px;">
-                        <span>0% (極度膠著)</span>
-                        <span>${globalMaxMargin.toFixed(1)}% (強勢拉開)</span>
-                    </div>`;
+                    <div style="display:flex; justify-content:space-between; font-size:10px; color:#777; font-weight:bold; margin-top:5px; padding-left:50px;"><span>0% (膠著)</span><span>${globalMaxMargin.toFixed(1)}% (強勢)</span></div>`;
             } else {
-                let gradient = "linear-gradient(to right, #f7f7f7, #252525)";
-                if (layerName.includes("國民黨")) gradient = "linear-gradient(to right, #f7fbff, #08306b)";
-                else if (layerName.includes("民進黨")) gradient = "linear-gradient(to right, #f7fcf0, #00441b)";
+                let colorRangeHtml = '';
+                let currentMaxDisplay = globalMaxRate; 
+
+                if (layerId.includes("民進") || layerId.includes("林延鳳") || layerId.includes("鍾佩玲") || layerId.includes("陳賢蔚") || layerId.includes("陳慈慧") || layerId.includes("林世宗")) {
+                    colorRangeHtml = `linear-gradient(to right, hsl(130, 80%, 95%), hsl(130, 80%, 30%))`;
+                } else if (layerId.includes("國民") || layerId.includes("張斯綱") || layerId.includes("汪志冰") || layerId.includes("林杏兒") || layerId.includes("陳重文")) {
+                    colorRangeHtml = `linear-gradient(to right, hsl(210, 85%, 95%), hsl(210, 85%, 35%))`;
+                } else if (layerId.includes("民眾") || layerId.includes("黃瀞瑩")) {
+                    colorRangeHtml = `linear-gradient(to right, hsl(180, 85%, 90%), hsl(180, 85%, 35%))`;
+                } else if (layerId.includes("侯漢廷")) {
+                    colorRangeHtml = `linear-gradient(to right, hsl(15, 90%, 90%), hsl(15, 90%, 35%))`;
+                } else {
+                    colorRangeHtml = `linear-gradient(to right, #f7f7f7, #252525)`;
+                }
+
+                if (layerId.includes("ind_councilor_")) {
+                    currentMaxDisplay = window.MAX_COUNCILOR_RATE;
+                }
 
                 contentEl.innerHTML = `
-                    <div style="height:15px; width:100%; border-radius:4px; margin-bottom:5px; background:${gradient};"></div>
+                    <div style="font-size:11px; color:#555; margin-bottom:6px; line-height:1.4;">
+                        🎨 <b>顏色</b>：代表該指標之催票率漸層強度。<br>
+                        🏆 <b>里內最高票標記</b>：地圖上標有 <b>🏆 獎盃</b> 的里，代表該候選人在該里的得票數為<b>全體議員最高（第一名）</b>！
+                    </div>
+                    <div style="height:15px; width:100%; border-radius:4px; margin-bottom:5px; background:${colorRangeHtml};"></div>
                     <div style="display:flex; justify-content:space-between; font-size:11px; color:#666; font-weight:bold;">
                         <span>0.00%</span>
-                        <span>${globalMaxRate.toFixed(2)}%</span>
+                        <span>${currentMaxDisplay.toFixed(2)}% (全體候選人最高)</span>
                     </div>`;
+
+                if (layerId.includes("ind_councilor_")) {
+                    let candidateName = layerId.replace("ind_councilor_", "");
+                    
+                    currentActiveLayer.eachLayer(l => {
+                        let tName = l.feature.properties.TOWNNAME;
+                        let vName = l.feature.properties.VILLNAME;
+                        let key = tName + vName;
+
+                        if (electionData[key] && electionData[key]["里內第一名議員"] === candidateName) {
+                            let centerLatLng = l.getBounds().getCenter();
+                            
+                            let trophyMarker = L.marker(centerLatLng, {
+                                icon: L.divIcon({
+                                    html: `<div class="trophy-icon-style" title="${tName}${vName}：${candidateName}得票全區最高！">🏆</div>`,
+                                    iconSize: [26, 26], iconAnchor: [13, 13], className: ''
+                                })
+                            });
+
+                            trophyMarker.on('click', function(e) {
+                                L.DomEvent.stopPropagation(e);
+                                l.fire('click', e); 
+                            });
+
+                            activeTrophyGroup.addLayer(trophyMarker);
+                        }
+                    });
+                }
             }
         }
 
-        // ==================== 5. 智慧搜尋選單與融合 ====================
         function setupSearchControl() {
             let searchBaseLayer = L.geoJson(geojsonRawData, {
                 style: { opacity: 0, fillOpacity: 0, weight: 0 },
@@ -672,17 +770,10 @@
             }).addTo(map);
 
             window.searchControl = new L.Control.Search({
-                layer: searchBaseLayer,
-                propertyName: 'search_name',
-                collapsed: false,
-                zoom: window.innerWidth < 768 ? 14 : 15,
-                textPlaceholder: '輸入區與里名...',
-                marker: L.circleMarker([0, 0], {
-                    radius: 0, weight: 0, color: 'transparent', fillColor: 'transparent', fillOpacity: 0, opacity: 0
-                }),
-                moveToLocation: function (latlng, title, map) {
-                    map.flyTo(latlng, window.innerWidth < 768 ? 14 : 15, { animate: true, duration: 1.2 });
-                }
+                layer: searchBaseLayer, propertyName: 'search_name', collapsed: false,
+                zoom: window.innerWidth < 768 ? 14 : 15, textPlaceholder: '輸入區與里名...',
+                marker: L.circleMarker([0, 0], { radius: 0, weight: 0, color: 'transparent', fillColor: 'transparent', fillOpacity: 0, opacity: 0 }),
+                moveToLocation: function (latlng, title, map) { map.flyTo(latlng, window.innerWidth < 768 ? 14 : 15, { animate: true, duration: 1.2 }); }
             });
 
             map.addControl(window.searchControl);
@@ -698,26 +789,18 @@
                 if (searchInput) {
                     searchInput.style.width = 'calc(100% - 45px)'; searchInput.style.height = '28px';
                     searchInput.style.border = 'none'; searchInput.style.paddingLeft = '8px';
-                    searchInput.addEventListener('input', function (e) {
-                        if (e.target.value.trim() === "") resetFocusState();
-                    });
+                    searchInput.addEventListener('input', function (e) { if (e.target.value.trim() === "") resetFocusState(); });
                 }
                 container.appendChild(searchEl);
 
                 window.searchControl.on('search:locationfound', function (e) {
-                    // 📱 如果在手機端用搜尋功能，搜完之後自動把側邊選單關閉，方便看地圖焦點
-                    if (window.innerWidth < 768) {
-                        toggleSidebarMobile();
-                    }
+                    if(window.innerWidth < 768) { toggleSidebarMobile(); }
                     setTimeout(() => {
                         if (currentActiveLayer) {
                             currentActiveLayer.eachLayer(l => {
                                 if (l.feature.properties.TOWNNAME === e.layer.feature.properties.TOWNNAME &&
                                     l.feature.properties.VILLNAME === e.layer.feature.properties.VILLNAME) {
-
-                                    if (lastFocusedLayer && lastFocusedLayer !== l) {
-                                        currentActiveLayer.resetStyle(lastFocusedLayer);
-                                    }
+                                    if(lastFocusedLayer && lastFocusedLayer !== l) { currentActiveLayer.resetStyle(lastFocusedLayer); }
                                     lastFocusedLayer = l;
                                     l.setStyle({ color: '#1a73e8', weight: 3.0, fillOpacity: 0.85 });
                                     l.openPopup();
@@ -725,9 +808,7 @@
                             });
                         }
                     }, 50);
-                }).on('search:collapsed search:cancel', function () {
-                    resetFocusState();
-                });
+                }).on('search:collapsed search:cancel', function () { resetFocusState(); });
             }
         }
 
