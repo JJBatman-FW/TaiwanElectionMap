@@ -78,16 +78,8 @@
             letter-spacing: 0.5px;
         }
 
-        #sidebar-toggle-btn {
-            top: 15px;
-            left: 15px;
-        }
-
-        #legend-toggle-btn {
-            bottom: 15px;
-            right: 15px;
-            background-color: #34a853;
-        }
+        #sidebar-toggle-btn { top: 15px; left: 15px; }
+        #legend-toggle-btn { bottom: 15px; right: 15px; background-color: #34a853; }
 
         .accordion-header {
             background-color: #f8f9fa;
@@ -107,50 +99,14 @@
             transition: background-color 0.2s ease;
             box-sizing: border-box;
         }
+        .accordion-header:hover { background-color: #f1f3f4; }
+        .accordion-header::after { content: '▼'; font-size: 10px; color: #777; transition: transform 0.2s ease; }
+        .accordion-header.active { background-color: #e8f0fe; color: #1a73e8; border-color: #d2e3fc; }
+        .accordion-header.active::after { transform: rotate(180deg); color: #1a73e8; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.25s ease-out; padding-left: 8px; margin-bottom: 4px; }
 
-        .accordion-header:hover {
-            background-color: #f1f3f4;
-        }
-
-        .accordion-header::after {
-            content: '▼';
-            font-size: 10px;
-            color: #777;
-            transition: transform 0.2s ease;
-        }
-
-        .accordion-header.active {
-            background-color: #e8f0fe;
-            color: #1a73e8;
-            border-color: #d2e3fc;
-        }
-
-        .accordion-header.active::after {
-            transform: rotate(180deg);
-            color: #1a73e8;
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.25s ease-out;
-            padding-left: 8px;
-            margin-bottom: 4px;
-        }
-
-        .layer-option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            color: #444;
-        }
-
-        .layer-option input {
-            margin-right: 8px;
-            transform: scale(1.1);
-        }
+        .layer-option { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: #444; }
+        .layer-option input { margin-right: 8px; transform: scale(1.1); }
 
         .honeycomb-select {
             width: 100%;
@@ -168,19 +124,11 @@
             box-sizing: border-box;
             transition: border-color 0.2s;
         }
-
-        .honeycomb-select:focus {
-            border-color: #1a73e8;
-        }
+        .honeycomb-select:focus { border-color: #1a73e8; }
 
         .leaflet-marker-icon.custom-clean-town-marker {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 0px !important;
-            height: 0px !important;
+            background: transparent !important; border: none !important; box-shadow: none !important;
+            padding: 0 !important; margin: 0 !important; width: 0px !important; height: 0px !important;
         }
 
         .trophy-icon-style {
@@ -190,66 +138,32 @@
             cursor: pointer;
             text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.4);
         }
-
         @keyframes bounceTrophy {
-            0% {
-                transform: translate(-50%, -50%) scale(0.9);
-            }
-
-            100% {
-                transform: translate(-50%, -60%) scale(1.1);
-            }
+            0% { transform: translate(-50%, -50%) scale(0.9); }
+            100% { transform: translate(-50%, -60%) scale(1.1); }
         }
 
         path.leaflet-interactive:focus,
         path.leaflet-interactive:active,
         path.leaflet-interactive:focus-visible,
         .leaflet-container :focus {
-            outline: none !important;
-            outline-width: 0px !important;
-            box-shadow: none !important;
+            outline: none !important; outline-width: 0px !important; box-shadow: none !important;
         }
 
         @media (max-width: 767px) {
-            .ui-toggle-btn {
-                display: flex;
-            }
-
+            .ui-toggle-btn { display: flex; }
             #google-sidebar {
-                top: 0;
-                left: 0;
-                width: 290px;
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0 12px 12px 0;
-                transform: translateX(-105%);
-                opacity: 0;
+                top: 0; left: 0; width: 290px; height: 100vh; max-height: 100vh;
+                border-radius: 0 12px 12px 0; transform: translateX(-105%); opacity: 0;
                 box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
             }
-
             #custom-legend-box {
-                bottom: 80px;
-                right: 15px;
-                width: calc(100% - 30px);
-                max-width: 320px;
-                transform: translateY(130%);
-                opacity: 0;
-                pointer-events: auto;
+                bottom: 80px; right: 15px; width: calc(100% - 30px); max-width: 320px;
+                transform: translateY(130%); opacity: 0; pointer-events: auto;
             }
-
-            #google-sidebar.mobile-open {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            #custom-legend-box.mobile-open {
-                transform: translateY(0);
-                opacity: 1;
-            }
-
-            .leaflet-control-search {
-                width: 100% !important;
-            }
+            #google-sidebar.mobile-open { transform: translateX(0); opacity: 1; }
+            #custom-legend-box.mobile-open { transform: translateY(0); opacity: 1; }
+            .leaflet-control-search { width: 100% !important; }
         }
     </style>
 </head>
@@ -264,9 +178,7 @@
     <div id="google-sidebar">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div style="font-weight:bold; color:#333; font-size:13px;">🔍 快速尋找村里</div>
-            <button class="mobile-close-inner"
-                style="display:none; background:none; border:none; font-size:20px; cursor:pointer;"
-                onclick="toggleSidebarMobile()">✕</button>
+            <button class="mobile-close-inner" style="display:none; background:none; border:none; font-size:20px; cursor:pointer;" onclick="toggleSidebarMobile()">✕</button>
         </div>
         <script>
             if (window.innerWidth < 768) { document.querySelector('.mobile-close-inner').style.display = 'block'; }
@@ -274,8 +186,7 @@
 
         <div id="integrated-search-container" style="margin-bottom: 18px; min-height: 32px;"></div>
 
-        <div
-            style="font-size:16px; font-weight:bold; color:#1a73e8; margin-bottom:14px; border-bottom:2px solid #1a73e8; padding-bottom:6px;">
+        <div style="font-size:16px; font-weight:bold; color:#1a73e8; margin-bottom:14px; border-bottom:2px solid #1a73e8; padding-bottom:6px;">
             🗺️ 台北市選舉數據指標
         </div>
 
@@ -297,7 +208,7 @@
                 <option value="內湖南港">第2選區（內湖、南港）</option>
                 <option value="松山信義">第3選區（松山、信義）</option>
                 <option value="中山大同">第4選區（中山、大同）</option>
-                <option value="中正萬華">第5選區校（中正、萬華）</option>
+                <option value="中正萬華">第5選區（中正、萬華）</option>
                 <option value="大安文山">第6選區（大安、文山）</option>
             </select>
 
@@ -311,9 +222,7 @@
     <div id="custom-legend-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div id="legend-title" style="font-weight: bold; color: #333;">📊 地圖數據指標</div>
-            <button class="legend-close-inner"
-                style="display:none; background:none; border:none; font-size:16px; cursor:pointer; color:#777;"
-                onclick="toggleLegendMobile()">✕</button>
+            <button class="legend-close-inner" style="display:none; background:none; border:none; font-size:16px; cursor:pointer; color:#777;" onclick="toggleLegendMobile()">✕</button>
         </div>
         <script>
             if (window.innerWidth < 768) { document.querySelector('.legend-close-inner').style.display = 'block'; }
@@ -345,9 +254,9 @@
 
         let parsedMeta = {
             years: new Set(),
-            mayorFields: [],
-            councilorFields: [],
-            individualCouncilors: {}
+            mayorFields: [],     
+            councilorFields: [], 
+            individualCouncilors: {} 
         };
 
         const DISTRICT_MAPPING = {
@@ -363,34 +272,32 @@
         function getBivariateColor(leader, margin) {
             let weight = Math.min(margin / (globalMaxMargin || 1), 1.0);
             if (margin <= 5.0) weight = weight * 0.4;
-
+            
             if (leader.includes('國民黨')) return `hsl(210, 85%, ${95 - (weight * 60)}%)`;
             if (leader.includes('民進黨') || leader.includes('民主進步')) return `hsl(130, 80%, ${95 - (weight * 65)}%)`;
             if (leader.includes('民眾黨') || leader.includes('台灣民眾')) return `hsl(180, 85%, ${90 - (weight * 55)}%)`;
             return `hsl(0, 0%, ${95 - (weight * 70)}%)`;
         }
 
-        // ⚡【核心重構】：修正分母比率天花板判定，不再會因為 globalMaxRate 出錯而慘白
+        // ⚡【全特徵模糊填色核心】：不看切分索引，直接看整串欄位字串包含什麼政黨關鍵字，解決所有死灰問題
         function getSinglePartyColor(fullFieldText, val, isIndividual) {
             let maxDenominator = isIndividual ? globalMaxIndRate : globalMaxRate;
-            if (!maxDenominator || maxDenominator < 10) maxDenominator = 70;
-
+            if (!maxDenominator || maxDenominator < 10) maxDenominator = 65; 
+            
             let weight = Math.min(val / maxDenominator, 1.0);
+            let finalColor = `hsl(0, 0%, ${95 - (weight * 65)}%)`; // 預設灰色階
 
-            // 預設顏色：若都沒對上則使用無黨籍灰色階
-            let finalColor = `hsl(0, 0%, ${90 - (weight * 60)}%)`;
-
-            // 直接用整個欄位中是否包含特定關鍵字來決定色系，不再管 split 索引！
             if (fullFieldText.includes("國民黨")) {
-                finalColor = `hsl(210, 85%, ${95 - (weight * 55)}%)`; // 藍色
+                finalColor = `hsl(210, 85%, ${95 - (weight * 55)}%)`;
             } else if (fullFieldText.includes("民進黨") || fullFieldText.includes("民主進步")) {
-                finalColor = `hsl(130, 80%, ${95 - (weight * 60)}%)`; // 綠色
+                finalColor = `hsl(130, 80%, ${95 - (weight * 60)}%)`;
             } else if (fullFieldText.includes("民眾黨") || fullFieldText.includes("台灣民眾")) {
-                finalColor = `hsl(180, 85%, ${90 - (weight * 50)}%)`; // 蒂芬妮綠
+                finalColor = `hsl(180, 85%, ${90 - (weight * 50)}%)`;
             } else if (fullFieldText.includes("新黨") || fullFieldText.includes("侯漢廷")) {
-                finalColor = `hsl(15, 90%, ${90 - (weight * 50)}%)`;  // 黃/橘色
+                finalColor = `hsl(15, 90%, ${90 - (weight * 50)}%)`;
+            } else if (fullFieldText.includes("時代力量")) {
+                finalColor = `hsl(38, 95%, ${90 - (weight * 50)}%)`; // 時代力量黃
             }
-
             return finalColor;
         }
 
@@ -461,6 +368,7 @@
             map.flyTo(INITIAL_CENTER, INITIAL_ZOOM, { animate: true, duration: 1.2 });
         }
 
+        // ==================== 3. 核心大腦：完美去重過濾載入器 ====================
         async function loadDashboardData() {
             initMap();
             try {
@@ -469,16 +377,10 @@
                 geojsonRawData = await geoResponse.json();
 
                 const masterCsvText = await fetch(MASTER_CSV_URL).then(res => res.text());
-
-                // ⚡【安全機制 1】：重置全域的元資料解析桶，防止重複加載
-                parsedMeta = {
-                    years: new Set(),
-                    mayorFields: [],
-                    councilorFields: [],
-                    individualCouncilors: {}
-                };
-                // ⚡【核心防護 2】：在此處初始化（清空）選單去重追蹤器
-                window.seenFieldsTracker = new Set();
+                
+                // 每次加載徹底初始化乾淨的儲存空間
+                parsedMeta = { years: new Set(), mayorFields: [], councilorFields: [], individualCouncilors: {} };
+                window.seenFieldsTracker = new Set(); // 👈 強效核能去重器啟動
 
                 const csvResults = Papa.parse(masterCsvText, { header: true, skipEmptyLines: true }).data;
 
@@ -501,38 +403,34 @@
             }
         }
 
+        // 🧠【模糊歸類去重引擎】：不管大表底線多還是少、空白多還是少，在這一關通通抓出唯一的乾淨選項
         function analyzeCsvHeaders(headers) {
-            // 使用 Set 來記錄已經加過的欄位識別碼，防止隨「里」重複塞入
-            if (!window.seenFieldsTracker) {
-                window.seenFieldsTracker = new Set();
-            }
-
             headers.forEach(header => {
                 if (!header || !header.endsWith('催票率')) return;
-
-                // 如果這個欄位名稱之前已經處理過了，直接跳過，絕不重複加入選單！
+                
+                // 🔒【終極去重防線】：只要該欄位名稱已經被登記過一次，直接抹殺，絕對不重複加入
                 if (window.seenFieldsTracker.has(header)) return;
                 window.seenFieldsTracker.add(header);
 
                 let parts = header.split('_');
-                let year = parts[0];
+                let year = parts[0]; 
                 parsedMeta.years.add(year);
 
-                // 1. 市長欄位解析
+                // A. 市長特徵模糊判定
                 if (header.includes('市長')) {
                     let party = "其他政黨";
                     if (header.includes("國民黨")) party = "中國國民黨";
                     else if (header.includes("民進黨") || header.includes("民主進步")) party = "民主進步黨";
                     else if (header.includes("民眾黨") || header.includes("台灣民眾")) party = "台灣民眾黨";
-
+                    
                     parsedMeta.mayorFields.push({ field: header, year: year, party: party });
-                }
-
-                // 2. 議員欄位解析
+                } 
+                // B. 議員特徵模糊判定
                 else if (header.includes('議員')) {
                     let isIndividual = false;
                     let candidateName = "";
-
+                    
+                    // 用 DISTRICT_MAPPING 內的全北市名單進行實名比對
                     for (let zone in DISTRICT_MAPPING) {
                         for (let name of DISTRICT_MAPPING[zone]) {
                             if (header.includes(name)) {
@@ -550,16 +448,17 @@
                         else if (header.includes("民進黨")) party = "民進黨";
                         else if (header.includes("民眾黨")) party = "民眾黨";
                         else if (header.includes("新黨")) party = "新黨";
-
+                        
                         parsedMeta.individualCouncilors[candidateName] = { field: header, year: year, party: party };
                     } else {
+                        // 判定為政黨總催票率
                         let party = "其他政黨";
                         if (header.includes("國民黨")) party = "中國國民黨";
                         else if (header.includes("民進黨") || header.includes("民主進步")) party = "民主進步黨";
                         else if (header.includes("民眾黨") || header.includes("台灣民眾")) party = "台灣民眾黨";
                         else if (header.includes("新黨")) party = "新黨";
                         else if (header.includes("時代力量")) party = "時代力量";
-
+                        
                         parsedMeta.councilorFields.push({ field: header, year: year, party: party });
                     }
                 }
@@ -569,7 +468,6 @@
 
         function processMasterElectionData(rows) {
             let allRates = [], allIndRates = [], allMargins = {};
-
             window.SORTED_YEARS.forEach(yr => { allMargins[yr] = []; });
 
             rows.forEach(row => {
@@ -579,18 +477,15 @@
                 electionData[key] = { TOWNNAME: row.TOWNNAME, VILLNAME: row.VILLNAME, raw: row };
 
                 parsedMeta.mayorFields.forEach(item => {
-                    // ⚡【強固轉型】：清洗可能殘留在大表中的百分比符號 %，確保純數字運算
-                    let rawVal = String(row[item.field] || '0').replace(/%/g, '').trim();
-                    let val = parseFloat(rawVal) || 0;
+                    let val = parseFloat(String(row[item.field] || '0').replace(/%/g, '')) || 0;
                     electionData[key][item.field] = val;
-                    allRates.push(val);
+                    if(val > 0) allRates.push(val);
                 });
 
                 parsedMeta.councilorFields.forEach(item => {
-                    let rawVal = String(row[item.field] || '0').replace(/%/g, '').trim();
-                    let val = parseFloat(rawVal) || 0;
+                    let val = parseFloat(String(row[item.field] || '0').replace(/%/g, '')) || 0;
                     electionData[key][item.field] = val;
-                    allRates.push(val);
+                    if(val > 0) allRates.push(val);
                 });
 
                 let maxVotesInVillage = 0;
@@ -598,10 +493,9 @@
 
                 Object.keys(parsedMeta.individualCouncilors).forEach(name => {
                     let item = parsedMeta.individualCouncilors[name];
-                    let rawVal = String(row[item.field] || '0').replace(/%/g, '').trim();
-                    let val = parseFloat(rawVal) || 0;
+                    let val = parseFloat(String(row[item.field] || '0').replace(/%/g, '')) || 0;
                     electionData[key][item.field] = val;
-                    allIndRates.push(val);
+                    if(val > 0) allIndRates.push(val);
 
                     if (val > maxVotesInVillage) {
                         maxVotesInVillage = val;
@@ -631,7 +525,7 @@
 
             globalMaxRate = Math.max(...allRates, 0);
             globalMaxIndRate = Math.max(...allIndRates, 0);
-
+            
             let flatMargins = [];
             Object.values(allMargins).forEach(arr => flatMargins = flatMargins.concat(arr));
             globalMaxMargin = Math.max(...flatMargins, 0);
@@ -642,10 +536,13 @@
             const rateBox = document.getElementById("rate-options-box");
             const counBox = document.getElementById("councilor-options-box");
 
+            // 清空舊 HTML，防止重複渲染追加
+            bivBox.innerHTML = ""; rateBox.innerHTML = ""; counBox.innerHTML = "";
+
             window.SORTED_YEARS.forEach((yr, idx) => {
                 let id = `bivariate_${yr}`;
                 let name = `${yr}年 市長拉鋸激戰地圖`;
-                let checked = idx === window.SORTED_YEARS.length - 1 ? "checked" : "";
+                let checked = idx === window.SORTED_YEARS.length - 1 ? "checked" : ""; 
                 bivBox.innerHTML += `<label class="layer-option"><input type="radio" name="map_layer_toggle" value="${id}" data-name="${name}" ${checked}> ${name}</label>`;
                 createLeafletLayer(id, 'bivariate', yr, null, name);
             });
@@ -725,7 +622,6 @@
             let geoJsonInstance = L.geoJson(geojsonRawData, {
                 style: function (feature) {
                     let key = String(feature.properties.TOWNNAME || '').trim() + String(feature.properties.VILLNAME || '').trim();
-                    // 預設樣式：透明無色（針對完全沒選舉資料、或該欄位沒填資料的里）
                     let fillColor = "transparent", fillOpacity = 0, strokeColor = "#ffffff", strokeWidth = 0.4;
 
                     if (electionData[key]) {
@@ -736,18 +632,14 @@
                             fillColor = getBivariateColor(leadParty, leadMargin);
                             fillOpacity = 0.8;
                         } else {
-                            // 💡【核心防禦】：嚴格檢查該欄位的值是否存在、是否為有效數字、且大於 0
                             let val = parseFloat(d[field]);
                             if (d[field] !== undefined && !isNaN(val) && val > 0) {
                                 let isIndividual = type === 'individual_candidate';
+                                // ⚡【強固修正】：直接傳入整個欄位名稱 field，讓色彩引擎去做包含比對，保證不灰階
                                 fillColor = getSinglePartyColor(field, val, isIndividual);
-                                fillOpacity = 0.8;
-                                strokeColor = "#ffffff";
-                                strokeWidth = 0.7;
+                                fillOpacity = 0.8; strokeColor = "#ffffff"; strokeWidth = 0.7;
                             } else {
-                                // 💡 如果這個里剛好「沒有這欄的資料」（空白格），就給它淡灰色外框，不塗底色
-                                strokeColor = "#d3d3d3";
-                                strokeWidth = 0.4;
+                                strokeColor = "#d3d3d3"; strokeWidth = 0.4; // 空白里給予淡灰色邊線
                             }
                         }
                     }
@@ -777,22 +669,23 @@
                                 popupHtml += `<div style="font-size:11px; color:gray; margin-bottom:6px;">🥇 本里最高票議員: ${d["里內第一名議員"] || '無資料'}</div>`;
                             }
                         } else {
-                            let indicatorValue = (d[field] !== undefined && d[field] !== null) ? d[field].toFixed(2) + "%" : "0.00%";
+                            let val = parseFloat(d[field]);
+                            let indicatorValue = (d[field] !== undefined && !isNaN(val)) ? val.toFixed(2) + "%" : "無資料";
                             popupHtml += `<div style="font-size:12px; margin-bottom:6px;">📊 <b>當前指標</b>: <span style="font-weight:bold; color:#0056b3;">${indicatorValue}</span></div>`;
                         }
 
                         popupHtml += `<div style="font-size:11px; font-weight:bold; color:#1a73e8; margin:8px 0 2px 0;">🏛️ 歷年市長催票率紀錄</div>`;
                         popupHtml += `<table style="width:100%; font-size:10px; border-collapse:collapse; text-align:center;">
                             <tr style="color:#666; background:#f1f3f4;"><th>年份</th><th>國民黨</th><th>民進黨</th><th>民眾/其他</th></tr>`;
-
+                        
                         window.SORTED_YEARS.forEach(y => {
                             let kmtF = parsedMeta.mayorFields.find(f => f.year === y && f.party.includes("國民黨"));
                             let dppF = parsedMeta.mayorFields.find(f => f.year === y && (f.party.includes("民進黨") || f.party.includes("民主進步")));
                             let otherF = parsedMeta.mayorFields.find(f => f.year === y && !f.party.includes("國民黨") && !f.party.includes("民進黨") && !f.party.includes("民主進步"));
 
-                            let kmtVal = kmtF ? (d[kmtF.field] || 0).toFixed(1) + "%" : "-";
-                            let dppVal = dppF ? (d[dppF.field] || 0).toFixed(1) + "%" : "-";
-                            let otherVal = otherF ? (d[otherF.field] || 0).toFixed(1) + "%" : "-";
+                            let kmtVal = kmtF && d[kmtF.field] ? d[kmtF.field].toFixed(1) + "%" : "-";
+                            let dppVal = dppF && d[dppF.field] ? d[dppF.field].toFixed(1) + "%" : "-";
+                            let otherVal = otherF && d[otherF.field] ? d[otherF.field].toFixed(1) + "%" : "-";
 
                             popupHtml += `<tr style="border-bottom:1px solid #eee;"><td>${y}年</td><td>${kmtVal}</td><td>${dppVal}</td><td>${otherVal}</td></tr>`;
                         });
@@ -819,6 +712,7 @@
             layerInstances[layerId] = geoJsonInstance;
         }
 
+        // ==================== 6. 圖例智慧更新模組 ====================
         function switchLayer(layerId, layerName) {
             if (currentActiveLayer && map.hasLayer(currentActiveLayer)) { map.removeLayer(currentActiveLayer); }
             activeTrophyGroup.clearLayers();
@@ -845,30 +739,23 @@
             } else {
                 let colorRangeHtml = '';
                 let currentMaxDisplay = globalMaxRate;
-                let targetName = layerId.replace("rate_", "").replace("councilor_", "").replace("ind_councilor_", "");
 
-                if (targetName.includes("國民黨")) colorRangeHtml = `linear-gradient(to right, hsl(210, 85%, 95%), hsl(210, 85%, 35%))`;
-                else if (targetName.includes("民進黨") || targetName.includes("民主進步")) colorRangeHtml = `linear-gradient(to right, hsl(130, 80%, 95%), hsl(130, 80%, 30%))`;
-                else if (targetName.includes("民眾黨") || targetName.includes("台灣民眾")) colorRangeHtml = `linear-gradient(to right, hsl(180, 85%, 90%), hsl(180, 85%, 35%))`;
-                else if (targetName.includes("新黨")) colorRangeHtml = `linear-gradient(to right, hsl(15, 90%, 90%), hsl(15, 90%, 35%))`;
+                // ⚡【圖例模糊判定】：同步改為字串模糊包含，確保右下角漸層色條顏色永遠對齊
+                if (layerId.includes("國民黨")) colorRangeHtml = `linear-gradient(to right, hsl(210, 85%, 95%), hsl(210, 85%, 35%))`;
+                else if (layerId.includes("民進黨") || layerId.includes("民主進步")) colorRangeHtml = `linear-gradient(to right, hsl(130, 80%, 95%), hsl(130, 80%, 30%))`;
+                else if (layerId.includes("民眾黨") || layerId.includes("台灣民眾")) colorRangeHtml = `linear-gradient(to right, hsl(180, 85%, 90%), hsl(180, 85%, 35%))`;
+                else if (layerId.includes("新黨") || layerId.includes("侯漢廷")) colorRangeHtml = `linear-gradient(to right, hsl(15, 90%, 90%), hsl(15, 90%, 35%))`;
+                else if (layerId.includes("時代力量")) colorRangeHtml = `linear-gradient(to right, hsl(38, 95%, 90%), hsl(38, 95%, 35%))`;
                 else {
                     currentMaxDisplay = globalMaxIndRate;
-                    let parts = layerId.split('_');
-                    if (parts.length >= 3) {
-                        let party = parts[2];
-                        if (party.includes("國民黨")) colorRangeHtml = `linear-gradient(to right, hsl(210, 85%, 95%), hsl(210, 85%, 35%))`;
-                        else if (party.includes("民進黨")) colorRangeHtml = `linear-gradient(to right, hsl(130, 80%, 95%), hsl(130, 80%, 30%))`;
-                        else if (party.includes("民眾黨")) colorRangeHtml = `linear-gradient(to right, hsl(180, 85%, 90%), hsl(180, 85%, 35%))`;
-                        else colorRangeHtml = `linear-gradient(to right, #f7f7f7, #252525)`;
-                    } else {
-                        colorRangeHtml = `linear-gradient(to right, #f7f7f7, #252525)`;
-                    }
+                    if (layerId.includes("國民")) colorRangeHtml = `linear-gradient(to right, hsl(210, 85%, 95%), hsl(210, 85%, 35%))`;
+                    else if (layerId.includes("民進")) colorRangeHtml = `linear-gradient(to right, hsl(130, 80%, 95%), hsl(130, 80%, 30%))`;
+                    else if (layerId.includes("民眾")) colorRangeHtml = `linear-gradient(to right, hsl(180, 85%, 90%), hsl(180, 85%, 35%))`;
+                    else colorRangeHtml = `linear-gradient(to right, #f7f7f7, #252525)`;
                 }
 
-                if (layerId.includes("ind_councilor_")) {
-                    currentMaxDisplay = globalMaxIndRate;
-                }
-                if (!currentMaxDisplay || currentMaxDisplay < 10) currentMaxDisplay = 70;
+                if (layerId.includes("ind_councilor_")) { currentMaxDisplay = globalMaxIndRate; }
+                if (!currentMaxDisplay || currentMaxDisplay < 10) currentMaxDisplay = 65;
 
                 contentEl.innerHTML = `
                     <div style="font-size:11px; color:#555; margin-bottom:6px; line-height:1.4;">
