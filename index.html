@@ -272,11 +272,21 @@
 
         // ==================== 2. 全自動色彩渲染引擎 ====================
         function getBivariateColor(leader, margin) {
-            let weight = Math.min(margin / globalMaxMargin, 1.0);
+            let weight = Math.min(margin / (globalMaxMargin || 1), 1.0);
             if (margin <= 5.0) weight = weight * 0.4;
-            if (leader.includes('國民黨')) return `hsl(210, 85%, ${95 - (weight * 60)}%)`;
-            if (leader.includes('民進黨') || leader.includes('民主進步')) return `hsl(130, 80%, ${95 - (weight * 65)}%)`;
-            if (leader.includes('民眾黨') || leader.includes('台灣民眾')) return `hsl(180, 85%, ${90 - (weight * 55)}%)`;
+            
+            // ⚡【精準修正】：將 === 修正為 .includes()，完美相容「中國國民黨」與「民主進步黨」
+            if (leader.includes('國民黨')) {
+                return `hsl(210, 85%, ${95 - (weight * 60)}%)`; // 藍色階
+            }
+            if (leader.includes('民進黨') || leader.includes('民主進步')) {
+                return `hsl(130, 80%, ${95 - (weight * 65)}%)`; // 綠色階
+            }
+            if (leader.includes('民眾黨') || leader.includes('台灣民眾')) {
+                return `hsl(180, 85%, ${90 - (weight * 55)}%)`; // 蒂芬妮藍
+            }
+            
+            // 預設灰色階（用於無黨籍或真正膠著的里）
             return `hsl(0, 0%, ${95 - (weight * 70)}%)`;
         }
 
