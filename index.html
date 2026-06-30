@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.9/dist/leaflet-search.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.9/dist/leaflet-search.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-search@4.0.0/dist/leaflet-search.min.css" />
+    <script src="https://unpkg.com/leaflet-search@4.0.0/dist/leaflet-search.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -380,7 +380,7 @@
             years: new Set(),
             mayorFields: [],
             councilorFields: [],
-            individualCouncilors: {}, 
+            individualCouncilors: {},
             valueBounds: {}
         };
 
@@ -635,12 +635,12 @@
             rows.forEach(row => {
                 let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
                 if (!key) return;
-                
+
                 window.SORTED_YEARS.forEach(yr => {
                     let yrFields = parsedMeta.mayorFields.filter(f => f.year === yr);
                     if (yrFields.length > 0) {
                         let scores = { "國民黨": 0, "民進黨": 0, "民眾黨": 0, "其他": 0 };
-                        
+
                         yrFields.forEach(f => {
                             let scoreVal = electionData[key][f.field] || 0;
                             if (f.field.includes("國民黨")) scores["國民黨"] += scoreVal;
@@ -941,14 +941,14 @@
                             let uniqueKey = field.replace("ind_councilor_", "");
                             let item = parsedMeta.individualCouncilors[uniqueKey] || { candidateName: field.split('_')[1] || "候選人" };
                             let candidateName = item.candidateName;
-                            
+
                             let rateValue = d[field] !== undefined ? d[field].toFixed(2) + "%" : "無資料";
                             popupHtml += `<div style="font-size:12px; margin-bottom:4px;">🎖️ <b>${candidateName} 催票率</b>: <span style="font-weight:bold; color:#1a73e8;">${rateValue}</span></div>`;
-                            
+
                             let currentYear = document.getElementById("ind-year-dropdown").value;
                             let currentArea = document.getElementById("area-dropdown").value;
                             let groupKey = `${currentYear}_${currentArea}`;
-                            
+
                             let topCandidateInThisGroup = d["最高票紀錄"] ? d["最高票紀錄"][groupKey] : "";
 
                             if (topCandidateInThisGroup === candidateName) {
@@ -1063,7 +1063,7 @@
                     let item = parsedMeta.individualCouncilors[uniqueKey];
                     let fieldName = item ? item.field : "";
 
-                    if(fieldName) {
+                    if (fieldName) {
                         let candidatePureName = item.candidateName;
                         let currentYear = item.year;
                         let currentArea = item.area;
