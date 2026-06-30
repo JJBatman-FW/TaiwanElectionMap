@@ -380,7 +380,7 @@
             years: new Set(),
             mayorFields: [],
             councilorFields: [],
-            individualCouncilors: {},
+            individualCouncilors: {}, 
             valueBounds: {}
         };
 
@@ -457,7 +457,18 @@
             }
         }
 
-        // ⚡【地圖核心初始化功能】：正式歸位！
+        // 🟢【安全修正】：確保視視角重置函式在最頂端優先載入，防止彈窗關閉時報錯
+        function resetFocusState() {
+            if (lastFocusedLayer && currentActiveLayer) {
+                currentActiveLayer.resetStyle(lastFocusedLayer);
+                lastFocusedLayer = null;
+            }
+            if (map) {
+                map.flyTo(INITIAL_CENTER, INITIAL_ZOOM, { animate: true, duration: 1.2 });
+            }
+        }
+
+        // ⚡【地圖核心功能】
         function initMap() {
             map = L.map('map', { center: INITIAL_CENTER, zoom: INITIAL_ZOOM, zoomControl: false });
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -502,14 +513,6 @@
                 var content = element.nextElementSibling;
                 if (content) content.style.maxHeight = content.scrollHeight + "px";
             }
-        }
-
-        function resetFocusState() {
-            if (lastFocusedLayer && currentActiveLayer) {
-                currentActiveLayer.resetStyle(lastFocusedLayer);
-                lastFocusedLayer = null;
-            }
-            map.flyTo(INITIAL_CENTER, INITIAL_ZOOM, { animate: true, duration: 1.2 });
         }
 
         // ==================== 3. 數據加載與分流計算大腦 ====================
@@ -631,16 +634,15 @@
                 }
             });
 
-            // ⚡【強固型拉鋸戰引擎嵌入】：對每一里精準做藍綠白大 PK 
             rows.forEach(row => {
                 let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
                 if (!key) return;
-
+                
                 window.SORTED_YEARS.forEach(yr => {
                     let yrFields = parsedMeta.mayorFields.filter(f => f.year === yr);
                     if (yrFields.length > 0) {
                         let scores = { "國民黨": 0, "民進黨": 0, "民眾黨": 0, "其他": 0 };
-
+                        
                         yrFields.forEach(f => {
                             let scoreVal = electionData[key][f.field] || 0;
                             if (f.field.includes("國民黨")) scores["國民黨"] += scoreVal;
@@ -660,7 +662,6 @@
                 });
             });
 
-            // ⚡【同屆同組最高票保險箱】：解決議員跨年份獎盃衝突
             rows.forEach(row => {
                 let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
                 if (!key) return;
@@ -668,23 +669,23 @@
                 electionData[key]["最高票紀錄"] = {};
 
                 parsedMeta.years.forEach(yr => {
-                    ["士林北投", "內湖南港", "松山信義", "中山大同", "中正萬華", "大安文山"].forEach(area => {
-                        let maxVotesInGroup = 0;
-                        let topCandidateInGroup = "無資料";
+                    let maxVotesInVillage = 0;
+                    let topCandidateInVillage = "無資料";
 
-                        Object.keys(parsedMeta.individualCouncilors).forEach(uKey => {
-                            let item = parsedMeta.individualCouncilors[uKey];
-                            if (item.year === yr && item.area === area) {
-                                let val = electionData[key][item.field] || 0;
-                                if (val > maxVotesInGroup) {
-                                    maxVotesInGroup = val;
-                                    topCandidateInGroup = item.candidateName;
-                                }
+                    Object.keys(parsedMeta.individualCouncilors).forEach(uKey => {
+                        let item = parsedMeta.individualCouncilors[uKey];
+                        if (item.year === yr) {
+                            let val = electionData[key][item.field] || 0;
+                            if (val > maxVotesInVillage) {
+                                maxVotesInVillage = val;
+                                topCandidateInVillage = item.candidateName; 
                             }
-                        });
+                        }
+                    });
 
+                    ["士林北投", "內湖南港", "松山信義", "中山大同", "中正萬華", "大安文山"].forEach(area => {
                         let groupKey = `${yr}_${area}`;
-                        electionData[key]["最高票紀錄"][groupKey] = topCandidateInGroup;
+                        electionData[key]["最高票紀錄"][groupKey] = topCandidateInVillage;
                     });
                 });
             });
@@ -697,7 +698,6 @@
             globalMaxMargin = Math.max(...flatMargins, 0);
         }
 
-        // ==================== 4. 下拉式選單 UI 建立 ====================
         function buildControlUI() {
             const bivBox = document.getElementById("bivariate-options-box");
             const mayorYearSelect = document.getElementById("mayor-year-dropdown");
@@ -935,26 +935,34 @@
                         let d = electionData[key];
                         if (type === 'bivariate') {
                             let leader = d[`${year}_市長_領先政黨`] || "無";
-                            let margin = d[`${year}_市長_領先差距`] || 0;
+                            let margin = d[`${year}_市長_領微差距`] || 0;
                             popupHtml += `<div style="margin-bottom:6px; font-size:12px;">🏆 <b>${year} 市長領先</b>: <span style="font-weight:bold; color:#d9534f;">${leader}</span> (+${margin.toFixed(2)}%)</div>`;
                         } else if (type === 'individual_candidate') {
                             let uniqueKey = field.replace("ind_councilor_", "");
                             let item = parsedMeta.individualCouncilors[uniqueKey] || { candidateName: field.split('_')[1] || "候選人" };
                             let candidateName = item.candidateName;
-
+                            
                             let rateValue = d[field] !== undefined ? d[field].toFixed(2) + "%" : "無資料";
                             popupHtml += `<div style="font-size:12px; margin-bottom:4px;">🎖️ <b>${candidateName} 催票率</b>: <span style="font-weight:bold; color:#1a73e8;">${rateValue}</span></div>`;
+                            
+                            let liveTopCandidate = "無資料";
+                            let liveMaxVotes = -1;
 
-                            let currentYear = document.getElementById("ind-year-dropdown").value;
-                            let currentArea = document.getElementById("area-dropdown").value;
-                            let groupKey = `${currentYear}_${currentArea}`;
+                            Object.keys(parsedMeta.individualCouncilors).forEach(uKey => {
+                                let cItem = parsedMeta.individualCouncilors[uKey];
+                                if (cItem.year === year) { 
+                                    let vRate = d[cItem.field] || 0;
+                                    if (vRate > liveMaxVotes) {
+                                        liveMaxVotes = vRate;
+                                        liveTopCandidate = cItem.candidateName;
+                                    }
+                                }
+                            });
 
-                            let topCandidateInThisGroup = d["最高票紀錄"] ? d["最高票紀錄"][groupKey] : "";
-
-                            if (topCandidateInThisGroup === candidateName) {
+                            if (liveTopCandidate === candidateName && liveMaxVotes > 0) {
                                 popupHtml += `<div style='background:#fff3cd; color:#856404; font-weight:bold; font-size:11px; padding:3px; border-radius:3px; margin-bottom:6px; text-align:center;'>🏆 本里本屆最高票候選人</div>`;
                             } else {
-                                popupHtml += `<div style="font-size:11px; color:gray; margin-bottom:6px;">🥇 本屆最高票議員: ${topCandidateInThisGroup || '無資料'}</div>`;
+                                popupHtml += `<div style="font-size:11px; color:gray; margin-bottom:6px;">🥇 本屆最高票議員: ${liveTopCandidate}</div>`;
                             }
                         } else {
                             let val = parseFloat(d[field]);
@@ -1036,12 +1044,17 @@
                 else if (layerId.includes("親民黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #ff8800)`;
                 else if (layerId.includes("無黨籍") || layerId.includes("無黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #555555)`;
                 else {
-                    currentMaxDisplay = globalMaxIndRate;
-                    if (layerId.includes("ind_councilor_")) {
-                        colorRangeHtml = `linear-gradient(to right, #ffffff, #e6550d)`;
-                    } else {
-                        colorRangeHtml = `linear-gradient(to right, #ffffff, #555555)`;
-                    }
+                    let uniqueKey = layerId.replace("ind_councilor_", "");
+                    let item = parsedMeta.individualCouncilors[uniqueKey];
+                    let party = item ? item.party : "";
+                    
+                    if (party.includes("國民黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #3182bd)`;
+                    else if (party.includes("民進黨") || party.includes("民主進步")) colorRangeHtml = `linear-gradient(to right, #ffffff, #31a354)`;
+                    else if (party.includes("民眾") || party.includes("台灣民眾")) colorRangeHtml = `linear-gradient(to right, #ffffff, #008080)`;
+                    else if (party.includes("時代力量")) colorRangeHtml = `linear-gradient(to right, #ffffff, #ffcc00)`;
+                    else if (party.includes("新黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #8b6508)`;
+                    else if (party.includes("親民")) colorRangeHtml = `linear-gradient(to right, #ffffff, #ff8800)`;
+                    else colorRangeHtml = `linear-gradient(to right, #ffffff, #555555)`;
                 }
 
                 if (layerId.includes("ind_councilor_")) { currentMaxDisplay = globalMaxIndRate; }
