@@ -3,258 +3,355 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>台北市選舉數據指標動態儀表板 (動態大腦完全體)</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-search@4.0.0/dist/leaflet-search.min.css" />
-    <script src="https://unpkg.com/leaflet-search@4.0.0/dist/leaflet-search.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>116年九合一大選台北市結果</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        html,
-        body,
-        #map {
-            width: 100%;
-            height: 100%;
-            padding: 0;
+        body {
+            font-family: '微軟正黑體', sans-serif;
+            background-color: #f5f6fa;
             margin: 0;
-            background-color: #f8f9fa;
-        }
-
-        #google-sidebar {
-            position: fixed;
-            top: 20px;
-            left: 10px;
-            width: 330px;
-            max-height: calc(100vh - 40px);
-            background-color: rgba(255, 255, 255, 0.96);
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.18);
-            border-radius: 12px;
-            padding: 18px;
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            z-index: 9999;
-            overflow-y: auto;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            box-sizing: border-box;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        #custom-legend-box {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 320px;
-            background-color: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-            padding: 12px;
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            font-size: 13px;
-            z-index: 9999;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .ui-toggle-btn {
-            position: fixed;
-            background-color: #1a73e8;
-            color: white;
-            border: none;
-            border-radius: 24px;
-            padding: 0 16px;
-            height: 44px;
-            font-size: 15px;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 10000;
-            display: none;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            letter-spacing: 0.5px;
         }
 
-        #sidebar-toggle-btn {
-            top: 15px;
-            left: 15px;
-        }
-
-        #legend-toggle-btn {
-            bottom: 15px;
-            right: 15px;
-            background-color: #34a853;
-        }
-
-        .accordion-header {
-            background-color: #f8f9fa;
-            color: #333;
-            cursor: pointer;
-            padding: 10px 12px;
+        .dashboard {
             width: 100%;
-            text-align: left;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 14px;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+            overflow: hidden; 
+        }
+
+        .title-section {
+            padding: 25px 25px 15px 25px; 
+            border-bottom: 2px solid #f4f6f8; 
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 32px;
+            font-weight: 900; 
+            color: #333;
+            margin: 0;
+            margin-bottom: 10px;
+        }
+
+        .sub-title {
+            font-size: 15px;
+            color: #666;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .map-section {
+            width: 100%;
+            height: 50vh;
+            min-height: 450px;
+            background: white;
+            padding: 20px;
+            border-radius: 0;
+            box-shadow: none;
+            border-bottom: 2px solid #f4f6f8; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .info-section {
+            width: 100%;
+            background: white;
+            padding: 25px;
+            border-radius: 0;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        
+        .info-name {
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 8px;
+            color: #222;
+            margin: 0;
+            text-align: left;
+        }
+
+        .header-controls {
             display: flex;
             justify-content: space-between;
+            width: 100%;
+            margin-bottom: 15px;
             align-items: center;
-            transition: background-color 0.2s ease;
-            box-sizing: border-box;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .accordion-header:hover {
-            background-color: #f1f3f4;
+        .left-controls,
+        .right-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
-        .accordion-header::after {
-            content: '▼';
-            font-size: 10px;
-            color: #777;
-            transition: transform 0.2s ease;
+        .btn {
+            padding: 8px 18px;
+            font-size: 15px;
+            font-weight: bold;
+            border: 2px solid #333;
+            background-color: white;
+            color: #333;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
 
-        .accordion-header.active {
-            background-color: #e8f0fe;
-            color: #1a73e8;
-            border-color: #d2e3fc;
+        .btn:hover {
+            background-color: #f0f0f0;
         }
 
-        .accordion-header.active::after {
-            transform: rotate(180deg);
-            color: #1a73e8;
+        .btn.active {
+            background-color: #333;
+            color: white;
         }
 
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.25s ease-out;
-            padding-left: 8px;
-            margin-bottom: 4px;
+        .search-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
-        .layer-option {
+        #search-input {
+            padding: 8px 15px;
+            font-size: 15px;
+            border: 2px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 180px;
+        }
+
+        #search-input:focus {
+            border-color: #333;
+        }
+
+        #search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        #btn-reset {
+            display: none;
+            background-color: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        #btn-reset:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        #map-container {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            text-align: center;
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            color: #444;
+            justify-content: center;
         }
 
-        .layer-option input {
-            margin-right: 8px;
-            transform: scale(1.1);
-        }
-
-        .honeycomb-select {
+        svg {
             width: 100%;
-            height: 38px;
-            padding: 0 10px;
-            font-size: 14px;
-            color: #444;
-            background-color: #fff;
-            border: 1px solid #ccc;
+            height: 100%;
+            max-height: 100%;
+            background-color: transparent;
+        }
+
+        .district {
+            stroke: #ffffff;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .district.fade {
+            opacity: 0.2;
+        }
+
+        .district.hover-active {
+            opacity: 1;
+            stroke: #333;
+            stroke-width: 1.5px !important;
+        }
+
+        .info-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            min-height: 110px;
+            position: relative;
+        }
+
+        .info-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 5px;
+        }
+
+        .info-right {
+            display: flex;
+            align-items: flex-end;
+            gap: 40px;
+        }
+
+        .vs-result-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            text-align: right;
+            line-height: 1.5;
+            margin-bottom: 5px;
+        }
+
+        .winner-photo-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .candidate-photo {
+            max-width: 160px;
+            height: 150px !important;
+            object-fit: contain;
+            position: absolute;
+            bottom: 0;
+        }
+
+        .info-status {
+            display: inline-block;
+            padding: 6px 14px;
             border-radius: 6px;
-            margin-bottom: 12px;
-            outline: none;
-            font-family: inherit;
-            cursor: pointer;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            width: fit-content;
         }
 
-        .honeycomb-select:focus {
-            border-color: #1a73e8;
+        /* 各黨派顏色定義 */
+        .bg-green { background-color: #2E7D32; }
+        .bg-blue { background-color: #1565C0; }
+        .bg-other { background-color: #757575; } /* 🌟 第三勢力專用色改為深灰色 */
+        .bg-gray { background-color: #999; }
+        
+        .text-green { color: #2E7D32; }
+        .text-blue { color: #1565C0; }
+        .bg-cyan { background-color: #00BCD4; }
+        .text-cyan { color: #0097A7; }
+
+        .vote-item {
+            margin-bottom: 15px;
         }
 
-        .honeycomb-select:disabled {
-            background-color: #f1f3f4;
-            color: #999;
-            cursor: not-allowed;
+        .vote-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 15px;
         }
 
-        .leaflet-marker-icon.custom-clean-town-marker {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 0px !important;
-            height: 0px !important;
+        .bar-bg {
+            width: 100%;
+            height: 12px;
+            background: #eee;
+            border-radius: 6px;
+            overflow: hidden;
         }
 
-        .trophy-icon-style {
-            font-size: 20px;
+        .bar-fill {
+            height: 100%;
+            transition: width 0.6s ease-out;
+        }
+
+        .carousel-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .carousel-header {
             text-align: center;
-            animation: bounceTrophy 1.8s infinite alternate;
-            cursor: pointer;
-            text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.4);
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #555;
+            transition: color 0.3s;
         }
 
-        @keyframes bounceTrophy {
-            0% {
-                transform: translate(-50%, -50%) scale(0.9);
+        @media (max-width: 800px) {
+            .header-controls {
+                flex-direction: column;
+                gap: 15px;
             }
-
-            100% {
-                transform: translate(-50%, -60%) scale(1.1);
+            .left-controls,
+            .right-controls {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
             }
-        }
-
-        path.leaflet-interactive:focus,
-        path.leaflet-interactive:active,
-        path.leaflet-interactive:focus-visible,
-        .leaflet-container :focus {
-            outline: none !important;
-            outline-width: 0px !important;
-            box-shadow: none !important;
-        }
-
-        @media (max-width: 767px) {
-            .ui-toggle-btn {
-                display: flex;
+            .search-wrapper {
+                flex: 1;
+                min-width: 200px;
             }
-
-            #google-sidebar {
-                top: 0;
-                left: 0;
-                width: 290px;
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0 12px 12px 0;
-                transform: translateX(-105%);
-                opacity: 0;
-                box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
-            }
-
-            #custom-legend-box {
-                bottom: 80px;
-                right: 15px;
-                width: calc(100% - 30px);
-                max-width: 320px;
-                transform: translateY(130%);
-                opacity: 0;
-                pointer-events: auto;
-            }
-
-            #google-sidebar.mobile-open {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            #custom-legend-box.mobile-open {
-                transform: translateY(0);
-                opacity: 1;
-            }
-
-            .leaflet-control-search {
-                width: 100% !important;
+            #search-input {
+                width: 100%;
+                box-sizing: border-box;
             }
         }
     </style>
@@ -262,900 +359,497 @@
 
 <body>
 
-    <div id="map"></div>
-
-    <button id="sidebar-toggle-btn" class="ui-toggle-btn" onclick="toggleSidebarMobile()">≡ 選單</button>
-    <button id="legend-toggle-btn" class="ui-toggle-btn" onclick="toggleLegendMobile()">▲ 圖例</button>
-
-    <div id="google-sidebar">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div style="font-weight:bold; color:#333; font-size:13px;">🔍 快速尋找村里</div>
-            <button class="mobile-close-inner"
-                style="display:none; background:none; border:none; font-size:20px; cursor:pointer;"
-                onclick="toggleSidebarMobile()">✕</button>
-        </div>
-        <script>
-            if (window.innerWidth < 768) { document.querySelector('.mobile-close-inner').style.display = 'block'; }
-        </script>
-
-        <div id="integrated-search-container" style="margin-bottom: 18px; min-height: 32px;"></div>
-
-        <div
-            style="font-size:16px; font-weight:bold; color:#1a73e8; margin-bottom:14px; border-bottom:2px solid #1a73e8; padding-bottom:6px;">
-            🗺️ 台北市選舉數據指標
+    <div class="dashboard">
+        <!-- 標題區塊 -->
+        <div class="title-section">
+            <h1 class="main-title">116年九合一大選台北市結果</h1>
+            <p class="sub-title">比較2022年、2026年兩屆選舉結果，板塊顏色為該里得票最高的侯選人黨籍顏色，<br>若本屆得票最高者與上一屆不同，則視為「翻盤」；相同則視為「守住」。</p>
         </div>
 
-        <div class="accordion-header active" onclick="toggleAccordion(this)">📊 市長：動態激戰拉鋸地圖</div>
-        <div class="accordion-content" id="bivariate-options-box" style="max-height: 250px;"></div>
-
-        <div class="accordion-header" onclick="toggleAccordion(this)">📈 市長：個別政黨催票率</div>
-        <div class="accordion-content" id="rate-options-box">
-            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第一步：請選擇選舉年份</div>
-            <select id="mayor-year-dropdown" class="honeycomb-select" onchange="updateMayorPartyDropdown()">
-                <option value="">-- 請選擇年份 --</option>
-            </select>
-            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第二步：請選擇政黨指標</div>
-            <select id="mayor-party-dropdown" class="honeycomb-select" onchange="onMayorPartySelectChanged()" disabled>
-                <option value="">-- 請先選擇年份 --</option>
-            </select>
+        <!-- 上方：地圖區 -->
+        <div class="map-section">
+            <div class="header-controls">
+                <div class="left-controls">
+                    <button id="btn-district" class="btn active" onclick="switchLevel('district')">依區別</button>
+                    <button id="btn-village" class="btn" onclick="switchLevel('village')">依里別</button>
+                </div>
+                <div class="right-controls">
+                    <div class="search-wrapper">
+                        <input type="text" id="search-input" placeholder="搜尋區名或里名..." oninput="handleSearchInput()"
+                            onkeypress="handleEnter(event)">
+                        <div id="search-suggestions"></div>
+                    </div>
+                    <button id="btn-search" class="btn" onclick="searchArea()">搜尋</button>
+                    <button id="btn-reset" class="btn" onclick="resetMap()">返回全市</button>
+                </div>
+            </div>
+            <div id="map-container">
+                <svg id="map-svg" viewBox="0 0 700 500" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <!-- 綠營翻盤斜線 -->
+                        <pattern id="pattern-green-flip" width="10" height="10" patternTransform="rotate(45)"
+                            patternUnits="userSpaceOnUse">
+                            <rect width="10" height="10" fill="#2E7D32"></rect>
+                            <line x1="0" y1="0" x2="0" y2="10" stroke="#81C784" stroke-width="3"></line>
+                        </pattern>
+                        <!-- 藍營翻盤斜線 -->
+                        <pattern id="pattern-blue-flip" width="10" height="10" patternTransform="rotate(45)"
+                            patternUnits="userSpaceOnUse">
+                            <rect width="10" height="10" fill="#1565C0"></rect>
+                            <line x1="0" y1="0" x2="0" y2="10" stroke="#90CAF9" stroke-width="3"></line>
+                        </pattern>
+                        <!-- 🌟 更新：第三勢力/小黨翻盤斜線改為深淺灰色 -->
+                        <pattern id="pattern-other-flip" width="10" height="10" patternTransform="rotate(45)"
+                            patternUnits="userSpaceOnUse">
+                            <rect width="10" height="10" fill="#757575"></rect>
+                            <line x1="0" y1="0" x2="0" y2="10" stroke="#BDBDBD" stroke-width="3"></line>
+                        </pattern>
+                    </defs>
+                    <g id="map-group"></g>
+                </svg>
+            </div>
         </div>
 
-        <div class="accordion-header" onclick="toggleAccordion(this)">🎖️ 議員：政黨總催票率</div>
-        <div class="accordion-content" id="councilor-options-box">
-            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第一步：請選擇選舉年份</div>
-            <select id="councilor-year-dropdown" class="honeycomb-select" onchange="updateCouncilorPartyDropdown()">
-                <option value="">-- 請選擇年份 --</option>
-            </select>
-            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第二步：請選擇政黨總體指標</div>
-            <select id="councilor-party-dropdown" class="honeycomb-select" onchange="onCouncilorPartySelectChanged()"
-                disabled>
-                <option value="">-- 請先選擇年份 --</option>
-            </select>
+        <!-- 下方：資訊面板區 -->
+        <div class="info-section">
+            <div class="info-header-row">
+                <!-- 左側：地區名稱與標籤 -->
+                <div class="info-left">
+                    <h2 class="info-name" id="info-name">請在地圖上選擇區域</h2>
+                    <div id="info-status" class="info-status bg-gray">等待選擇...</div>
+                </div>
+
+                <!-- 右側：勝負票數與勝者頭像 -->
+                <div class="info-right">
+                    <div id="vs-result-text" class="vs-result-text">-</div>
+                    <div class="winner-photo-container">
+                        <img id="photo-green" class="candidate-photo" src="puma.png" alt="沈伯洋" style="display: none;">
+                        <img id="photo-blue" class="candidate-photo" src="wanan.png" alt="蔣萬安" style="display: none;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自動輪播長條圖 -->
+            <div class="carousel-section">
+                <div class="carousel-header">
+                    <div class="carousel-title" id="carousel-title">等待資料...</div>
+                </div>
+
+                <div class="vote-item">
+                    <div class="vote-header text-green">
+                        <span id="carousel-green-label">綠營得票</span>
+                        <span id="carousel-green-votes">0</span>
+                    </div>
+                    <div class="bar-bg">
+                        <div class="bar-fill bg-green" id="carousel-green-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="vote-item">
+                    <div class="vote-header text-blue">
+                        <span id="carousel-blue-label">藍營得票</span>
+                        <span id="carousel-blue-votes">0</span>
+                    </div>
+                    <div class="bar-bg">
+                        <div class="bar-fill bg-blue" id="carousel-blue-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- 2022 第三勢力專用區塊 -->
+                <div class="vote-item" id="carousel-third-item" style="display: none;">
+                    <div class="vote-header text-cyan">
+                        <span id="carousel-third-label">第三勢力得票</span>
+                        <span id="carousel-third-votes">0</span>
+                    </div>
+                    <div class="bar-bg">
+                        <div class="bar-fill bg-cyan" id="carousel-third-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="accordion-header" onclick="toggleAccordion(this)">🏆 議員：個人催票率 (連動選區)</div>
-        <div class="accordion-content" id="ind-councilor-options-box">
-            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第一步：請選擇選舉年份</div>
-            <select id="ind-year-dropdown" class="honeycomb-select" onchange="updateIndAreaDropdown()">
-                <option value="">-- 請選擇年份 --</option>
-            </select>
-
-            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第二步：請選擇議員選區</div>
-            <select id="area-dropdown" class="honeycomb-select" onchange="updateCandidateDropdown()" disabled>
-                <option value="">-- 請先選擇年份 --</option>
-            </select>
-
-            <div style="font-size: 12px; color: #666; margin: 4px 0 6px 2px; font-weight: bold;">第三步：請選擇議員候選人</div>
-            <select id="candidate-dropdown" class="honeycomb-select" onchange="onCandidateSelectChanged()" disabled>
-                <option value="">-- 請先選擇選區 --</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="custom-legend-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div id="legend-title" style="font-weight: bold; color: #333;">📊 地圖數據指標</div>
-            <button class="legend-close-inner"
-                style="display:none; background:none; border:none; font-size:16px; cursor:pointer; color:#777;"
-                onclick="toggleLegendMobile()">✕</button>
-        </div>
-        <script>
-            if (window.innerWidth < 768) { document.querySelector('.legend-close-inner').style.display = 'block'; }
-        </script>
-        <div id="legend-content"></div>
     </div>
 
     <script>
-        // ==================== 1. 全域變數 ====================
-        const MASTER_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTxL7RpmKAZf4BhIZ1bZNTKnopzukUAJRmQQ2seSIe6nVPXb6w23ss5n8zC0RwHh0uaINbhvU8_bhdz/pub?gid=768058140&single=true&output=csv";
-        const GEOJSON_URL = "https://gist.githubusercontent.com/JJBatman-FW/dfc0d93794df27e14e8d26954a644d70/raw/83a95e1764abc97e5b6ae73659ccb4ee134ecc74/TP.json";
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOdiY7lUyovm-a3-yLveLIkzUibwRVJw6ueYEl1ZvDub16t7SaP2N-ZaTK43O6SiCsaLs6p-om_yZk/pub?gid=1892897354&single=true&output=csv';
+        const TAIPEI_GEOJSON_URL = 'https://gist.githubusercontent.com/JJBatman-FW/dfc0d93794df27e14e8d26954a644d70/raw';
 
-        const TOWN_CENTERS = {
-            "萬華區": [25.028, 121.499], "中正區": [25.032, 121.519], "大同區": [25.064, 121.513],
-            "中山區": [25.068, 121.538], "大安區": [25.026, 121.543], "松山區": [25.058, 121.558],
-            "信義區": [25.030, 121.567], "內湖區": [25.079, 121.589], "南港區": [25.039, 121.616],
-            "士林區": [25.120, 121.545], "北投區": [25.148, 121.515], "文山區": [24.989, 121.570]
-        };
+        let globalSheetData = [];
+        let globalGeoData = null;
+        let currentLevel = 'district';
 
-        const TOWN_TO_DISTRICT_MAP = {
-            "士林區": "士林北投", "北投區": "士林北投",
-            "內湖區": "內湖南港", "南港區": "內湖南港",
-            "松山區": "松山信義", "信義區": "松山信義",
-            "中山區": "中山大同", "大同區": "中山大同",
-            "中正區": "中正萬華", "萬華區": "中正萬華",
-            "大安區": "大安文山", "文山區": "大安文山"
-        };
+        let isPinned = false;
+        let pathGenerator;
+        let carouselInterval = null;
 
-        const INITIAL_CENTER = [25.06, 121.58];
-        const INITIAL_ZOOM = window.innerWidth < 768 ? 11 : 12;
-
-        let map, electionData = {}, geojsonRawData;
-        let currentActiveLayer = null;
-        let globalMaxRate = 0, globalMaxMargin = 0, globalMaxIndRate = 0;
-        let layerInstances = {};
-        let lastFocusedLayer = null;
-        let activeTrophyGroup = L.layerGroup();
-
-        let parsedMeta = {
-            years: new Set(),
-            mayorFields: [],
-            councilorFields: [],
-            individualCouncilors: {}, 
-            valueBounds: {}
-        };
-
-        // ==================== 2. 全自動色彩渲染引擎 ====================
-        function getBivariateColor(leader, margin) {
-            let weight = Math.min(margin / (globalMaxMargin || 1), 1.0);
-            if (margin <= 5.0) weight = weight * 0.4;
-
-            if (leader.includes('國民黨')) return `hsl(210, 85%, ${95 - (weight * 60)}%)`;
-            if (leader.includes('民進黨') || leader.includes('民主進步')) return `hsl(130, 80%, ${95 - (weight * 65)}%)`;
-            if (leader.includes('民眾黨') || leader.includes('台灣民眾')) return `hsl(180, 85%, ${90 - (weight * 55)}%)`;
-            return `hsl(0, 0%, ${95 - (weight * 70)}%)`;
-        }
-
-        function mixHexColor(color1, color2, weight) {
-            let r1 = parseInt(color1.substring(1, 3), 16);
-            let g1 = parseInt(color1.substring(3, 5), 16);
-            let b1 = parseInt(color1.substring(5, 7), 16);
-
-            let r2 = parseInt(color2.substring(1, 3), 16);
-            let g2 = parseInt(color2.substring(3, 5), 16);
-            let b2 = parseInt(color2.substring(5, 7), 16);
-
-            let r = Math.round(r1 + (r2 - r1) * weight);
-            let g = Math.round(g1 + (g2 - g1) * weight);
-            let b = Math.round(b1 + (b2 - b1) * weight);
-
-            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-        }
-
-        function getSinglePartyColor(field, value, isIndividual = false) {
-            if (value <= 0) return "#ffffff";
-
-            let maxDenominator = isIndividual ? globalMaxIndRate : globalMaxRate;
-            if (!maxDenominator || maxDenominator < 10) maxDenominator = 65;
-
-            let weight = Math.min(value / maxDenominator, 1.0);
-            if (weight === 0) return "#ffffff";
-
-            let startColor = "#ffffff";
-            let endColor = "#555555";
-
-            if (field.includes("民主進步") || field.includes("民進黨") || field.includes("台灣基進") || field.includes("基進")) {
-                endColor = "#31a354";
-            } else if (field.includes("中國國民黨") || field.includes("國民黨")) {
-                endColor = "#3182bd";
-            } else if (field.includes("台灣民眾") || field.includes("民眾黨")) {
-                endColor = "#008080";
-            } else if (field.includes("時代力量")) {
-                endColor = "#ffcc00";
-            } else if (field.includes("新黨")) {
-                endColor = "#8b6508";
-            } else if (field.includes("親民黨")) {
-                endColor = "#ff8800";
-            } else if (field.includes("無黨籍") || field.includes("無黨")) {
-                endColor = "#555555";
-            } else if (isIndividual) {
-                endColor = "#e6550d";
+        document.addEventListener('click', function (event) {
+            let wrapper = document.querySelector('.search-wrapper');
+            let box = document.getElementById('search-suggestions');
+            if (wrapper && !wrapper.contains(event.target)) {
+                box.style.display = 'none';
             }
+        });
 
-            return mixHexColor(startColor, endColor, weight);
-        }
+        function handleSearchInput() {
+            let query = document.getElementById('search-input').value.trim();
+            let box = document.getElementById('search-suggestions');
+            box.innerHTML = '';
 
-        function toggleSidebarMobile() {
-            const sidebar = document.getElementById('google-sidebar');
-            const toggleBtn = document.getElementById('sidebar-toggle-btn');
-            sidebar.classList.toggle('mobile-open');
-            if (sidebar.classList.contains('mobile-open')) {
-                toggleBtn.innerHTML = "✕ 關閉"; toggleBtn.style.backgroundColor = "#d9534f";
-                document.getElementById('custom-legend-box').classList.remove('mobile-open');
-                document.getElementById('legend-toggle-btn').innerHTML = "▲ 圖例"; document.getElementById('legend-toggle-btn').style.backgroundColor = "#34a853";
-            } else {
-                toggleBtn.innerHTML = "≡ 選單"; toggleBtn.style.backgroundColor = "#1a73e8";
-            }
-        }
-
-        // 🟢【安全修正】：確保視視角重置函式在最頂端優先載入，防止彈窗關閉時報錯
-        function resetFocusState() {
-            if (lastFocusedLayer && currentActiveLayer) {
-                currentActiveLayer.resetStyle(lastFocusedLayer);
-                lastFocusedLayer = null;
-            }
-            if (map) {
-                map.flyTo(INITIAL_CENTER, INITIAL_ZOOM, { animate: true, duration: 1.2 });
-            }
-        }
-
-        // ⚡【地圖核心功能】
-        function initMap() {
-            map = L.map('map', { center: INITIAL_CENTER, zoom: INITIAL_ZOOM, zoomControl: false });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO'
-            }).addTo(map);
-
-            if (window.innerWidth >= 768) { L.control.zoom({ position: 'topright' }).addTo(map); }
-            activeTrophyGroup.addTo(map);
-
-            for (let town in TOWN_CENTERS) {
-                L.marker(TOWN_CENTERS[town], {
-                    icon: L.divIcon({
-                        html: `<div style="all:unset; display:block; position:absolute; transform:translate(-50%,-50%); font-family:'PingFang TC','Microsoft JhengHei',sans-serif; font-size:12px; font-weight:bold; color:#555; white-space:nowrap; text-shadow:1px 1px 2px rgba(255,255,255,0.8),-1px -1px 2px rgba(255,255,255,0.8);">${town}</div>`,
-                        iconSize: [1, 1], iconAnchor: [0, 0], className: 'custom-clean-town-marker'
-                    })
-                }).addTo(map);
-            }
-            map.on('popupclose', function () { resetFocusState(); });
-        }
-
-        function toggleLegendMobile() {
-            const legend = document.getElementById('custom-legend-box');
-            const toggleBtn = document.getElementById('legend-toggle-btn');
-            legend.classList.toggle('mobile-open');
-            if (legend.classList.contains('mobile-open')) {
-                toggleBtn.innerHTML = "✕ 關閉"; toggleBtn.style.backgroundColor = "#d9534f";
-                document.getElementById('google-sidebar').classList.remove('mobile-open');
-                document.getElementById('sidebar-toggle-btn').innerHTML = "≡ 選單"; toggleBtn.style.backgroundColor = "#1a73e8";
-            } else {
-                toggleBtn.innerHTML = "▲ 圖例"; toggleBtn.style.backgroundColor = "#34a853";
-            }
-        }
-
-        function toggleAccordion(element) {
-            const isAlreadyActive = element.classList.contains("active");
-            document.querySelectorAll(".accordion-header").forEach(h => {
-                h.classList.remove("active");
-                if (h.nextElementSibling) h.nextElementSibling.style.maxHeight = "0px";
-            });
-            if (!isAlreadyActive) {
-                element.classList.add("active");
-                var content = element.nextElementSibling;
-                if (content) content.style.maxHeight = content.scrollHeight + "px";
-            }
-        }
-
-        // ==================== 3. 數據加載與分流計算大腦 ====================
-        async function loadDashboardData() {
-            initMap();
-            try {
-                console.log("正在從整合大表同步全台北市歷史數據...");
-                const geoResponse = await fetch(GEOJSON_URL);
-                geojsonRawData = await geoResponse.json();
-
-                const masterCsvText = await fetch(MASTER_CSV_URL).then(res => res.text());
-
-                parsedMeta = { years: new Set(), mayorFields: [], councilorFields: [], individualCouncilors: {}, valueBounds: {} };
-                window.seenFieldsTracker = new Set();
-
-                const csvResults = Papa.parse(masterCsvText, { header: true, skipEmptyLines: true }).data;
-
-                if (csvResults.length > 0) {
-                    analyzeCsvHeaders(Object.keys(csvResults[0]));
-                    processMasterElectionData(csvResults);
-                    buildControlUI();
-                    setupSearchControl();
-
-                    const defaultRadio = document.querySelector('input[name="map_layer_toggle"]:checked');
-                    if (defaultRadio) {
-                        switchLayer(defaultRadio.value, defaultRadio.getAttribute('data-name'));
-                        const content = defaultRadio.closest('.accordion-content');
-                        if (content) content.style.maxHeight = content.scrollHeight + "px";
-                    }
-                }
-            } catch (err) {
-                alert("雲端大表資料同步失敗，請檢查網路或 Google 試算表發布連結！");
-                console.error(err);
-            }
-        }
-
-        function analyzeCsvHeaders(headers) {
-            headers.forEach(header => {
-                if (!header || !header.endsWith('催票率')) return;
-                if (window.seenFieldsTracker.has(header)) return;
-                window.seenFieldsTracker.add(header);
-
-                let parts = header.split('_');
-                let year = parts[0];
-                parsedMeta.years.add(year);
-
-                if (header.includes('市長')) {
-                    let partyName = parts[2] || parts[1] || "政黨";
-                    parsedMeta.mayorFields.push({ field: header, year: year, party: partyName });
-                }
-                else if (header.includes('議員')) {
-                    if (parts.length === 5) {
-                        let candidateName = parts[1];
-                        let partyName = parts[2];
-                        let uniqueKey = `${year}_${candidateName}`;
-
-                        parsedMeta.individualCouncilors[uniqueKey] = {
-                            field: header,
-                            year: year,
-                            party: partyName || "無黨籍",
-                            candidateName: candidateName,
-                            area: "未知選區"
-                        };
-                    } else if (parts.length === 4) {
-                        let partyName = parts[1] ? parts[1].trim() : "其他政黨";
-                        if (partyName === "議員" || partyName === "催票率" || partyName === "其他") return;
-
-                        parsedMeta.councilorFields.push({ field: header, year: year, party: partyName });
-                    }
-                }
-            });
-            window.SORTED_YEARS = Array.from(parsedMeta.years).sort();
-        }
-
-        function processMasterElectionData(rows) {
-            let allRates = [], allIndRates = [], allMargins = {};
-            window.SORTED_YEARS.forEach(yr => { allMargins[yr] = []; });
-
-            let candidateAreaTracker = {};
-
-            rows.forEach(row => {
-                let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
-                if (!key) return;
-
-                let townName = String(row.TOWNNAME || '').trim();
-                electionData[key] = { TOWNNAME: row.TOWNNAME, VILLNAME: row.VILLNAME, raw: row };
-
-                parsedMeta.mayorFields.forEach(item => {
-                    let val = parseFloat(String(row[item.field] || '0').replace(/%/g, '')) || 0;
-                    electionData[key][item.field] = val;
-                    if (val > 0) allRates.push(val);
-                });
-
-                parsedMeta.councilorFields.forEach(item => {
-                    let val = parseFloat(String(row[item.field] || '0').replace(/%/g, '')) || 0;
-                    electionData[key][item.field] = val;
-                    if (val > 0) allRates.push(val);
-                });
-
-                Object.keys(parsedMeta.individualCouncilors).forEach(uniqueKey => {
-                    let item = parsedMeta.individualCouncilors[uniqueKey];
-                    let val = parseFloat(String(row[item.field] || '0').replace(/%/g, '')) || 0;
-                    electionData[key][item.field] = val;
-                    if (val > 0) allIndRates.push(val);
-
-                    if (val > 0 && townName && TOWN_TO_DISTRICT_MAP[townName]) {
-                        if (!candidateAreaTracker[uniqueKey]) {
-                            candidateAreaTracker[uniqueKey] = new Set();
-                        }
-                        candidateAreaTracker[uniqueKey].add(TOWN_TO_DISTRICT_MAP[townName]);
-                    }
-                });
-            });
-
-            Object.keys(parsedMeta.individualCouncilors).forEach(uniqueKey => {
-                let tracker = candidateAreaTracker[uniqueKey];
-                if (tracker && tracker.size > 0) {
-                    parsedMeta.individualCouncilors[uniqueKey].area = Array.from(tracker)[0];
-                }
-            });
-
-            rows.forEach(row => {
-                let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
-                if (!key) return;
-                
-                window.SORTED_YEARS.forEach(yr => {
-                    let yrFields = parsedMeta.mayorFields.filter(f => f.year === yr);
-                    if (yrFields.length > 0) {
-                        let scores = { "國民黨": 0, "民進黨": 0, "民眾黨": 0, "其他": 0 };
-                        
-                        yrFields.forEach(f => {
-                            let scoreVal = electionData[key][f.field] || 0;
-                            if (f.field.includes("國民黨")) scores["國民黨"] += scoreVal;
-                            else if (f.field.includes("民進黨") || f.field.includes("民主進步")) scores["民進黨"] += scoreVal;
-                            else if (f.field.includes("民眾黨") || f.field.includes("台灣民眾")) scores["民眾黨"] += scoreVal;
-                            else scores["其他"] += scoreVal;
-                        });
-
-                        let sortedParties = Object.keys(scores).sort((a, b) => scores[b] - scores[a]);
-                        let leader = sortedParties[0];
-                        let margin = scores[sortedParties[0]] - scores[sortedParties[1]];
-
-                        electionData[key][`${yr}_市長_領先政黨`] = leader;
-                        electionData[key][`${yr}_市長_領先差距`] = margin;
-                        allMargins[yr].push(margin);
-                    }
-                });
-            });
-
-            rows.forEach(row => {
-                let key = String(row.TOWNNAME || '').trim() + String(row.VILLNAME || '').trim();
-                if (!key) return;
-
-                electionData[key]["最高票紀錄"] = {};
-
-                parsedMeta.years.forEach(yr => {
-                    let maxVotesInVillage = 0;
-                    let topCandidateInVillage = "無資料";
-
-                    Object.keys(parsedMeta.individualCouncilors).forEach(uKey => {
-                        let item = parsedMeta.individualCouncilors[uKey];
-                        if (item.year === yr) {
-                            let val = electionData[key][item.field] || 0;
-                            if (val > maxVotesInVillage) {
-                                maxVotesInVillage = val;
-                                topCandidateInVillage = item.candidateName; 
-                            }
-                        }
-                    });
-
-                    ["士林北投", "內湖南港", "松山信義", "中山大同", "中正萬華", "大安文山"].forEach(area => {
-                        let groupKey = `${yr}_${area}`;
-                        electionData[key]["最高票紀錄"][groupKey] = topCandidateInVillage;
-                    });
-                });
-            });
-
-            globalMaxRate = Math.max(...allRates, 0);
-            globalMaxIndRate = Math.max(...allIndRates, 0);
-
-            let flatMargins = [];
-            Object.values(allMargins).forEach(arr => flatMargins = flatMargins.concat(arr));
-            globalMaxMargin = Math.max(...flatMargins, 0);
-        }
-
-        function buildControlUI() {
-            const bivBox = document.getElementById("bivariate-options-box");
-            const mayorYearSelect = document.getElementById("mayor-year-dropdown");
-            const councilorYearSelect = document.getElementById("councilor-year-dropdown");
-            const indYearSelect = document.getElementById("ind-year-dropdown");
-
-            bivBox.innerHTML = "";
-            mayorYearSelect.innerHTML = '<option value="">-- 請選擇年份 --</option>';
-            councilorYearSelect.innerHTML = '<option value="">-- 請選擇年份 --</option>';
-            indYearSelect.innerHTML = '<option value="">-- 請選擇年份 --</option>';
-
-            window.SORTED_YEARS.forEach((yr, idx) => {
-                let id = `bivariate_${yr}`;
-                let name = `${yr}年 市長拉鋸激戰地圖`;
-                let checked = idx === window.SORTED_YEARS.length - 1 ? "checked" : "";
-                bivBox.innerHTML += `<label class="layer-option"><input type="radio" name="map_layer_toggle" value="${id}" data-name="${name}" ${checked}> ${name}</label>`;
-                createLeafletLayer(id, 'bivariate', yr, null, name);
-            });
-
-            let mayorYears = Array.from(new Set(parsedMeta.mayorFields.map(f => f.year))).sort();
-            mayorYears.forEach(yr => { mayorYearSelect.innerHTML += `<option value="${yr}">${yr}年</option>`; });
-
-            let councilorYears = Array.from(new Set(parsedMeta.councilorFields.map(f => f.year))).sort();
-            councilorYears.forEach(yr => { councilorYearSelect.innerHTML += `<option value="${yr}">${yr}年</option>`; });
-
-            let individualYears = Array.from(new Set(Object.values(parsedMeta.individualCouncilors).map(f => f.year))).sort();
-            individualYears.forEach(yr => { indYearSelect.innerHTML += `<option value="${yr}">${yr}年</option>`; });
-
-            parsedMeta.mayorFields.forEach(item => {
-                createLeafletLayer(`rate_${item.field}`, 'party_rate', item.year, item.field, `${item.year} 市長 ${item.party} 催票率`);
-            });
-            parsedMeta.councilorFields.forEach(item => {
-                createLeafletLayer(`councilor_${item.field}`, 'councilor_rate', item.year, item.field, `${item.year} 議員 ${item.party} 總催票率`);
-            });
-            Object.keys(parsedMeta.individualCouncilors).forEach(uniqueKey => {
-                let item = parsedMeta.individualCouncilors[uniqueKey];
-                createLeafletLayer(`ind_councilor_${uniqueKey}`, 'individual_candidate', item.year, item.field, `${item.year} 議員 ${item.candidateName} 個人催票率`);
-            });
-
-            document.querySelectorAll('input[name="map_layer_toggle"]').forEach(radio => {
-                radio.addEventListener('change', function () {
-                    resetAllDropdownsExcept("");
-                    switchLayer(this.value, this.getAttribute('data-name'));
-                    if (window.innerWidth < 768) { toggleSidebarMobile(); }
-                });
-            });
-        }
-
-        function updateMayorPartyDropdown() {
-            const yr = document.getElementById("mayor-year-dropdown").value;
-            const partyDrop = document.getElementById("mayor-party-dropdown");
-            partyDrop.innerHTML = "";
-            if (!yr) { partyDrop.innerHTML = '<option value="">-- 請先選擇年份 --</option>'; partyDrop.disabled = true; return; }
-
-            let fields = parsedMeta.mayorFields.filter(f => f.year === yr);
-            partyDrop.innerHTML = '<option value="">-- 請選擇政黨指標 --</option>';
-            fields.forEach(f => { partyDrop.innerHTML += `<option value="rate_${f.field}">${f.party} 催票率</option>`; });
-            partyDrop.disabled = false;
-        }
-
-        function onMayorPartySelectChanged() {
-            const layerId = document.getElementById("mayor-party-dropdown").value;
-            if (!layerId) return;
-            document.querySelectorAll('input[name="map_layer_toggle"]').forEach(r => r.checked = false);
-            resetAllDropdownsExcept("mayor");
-            let fieldObj = parsedMeta.mayorFields.find(f => `rate_${f.field}` === layerId);
-            switchLayer(layerId, `${fieldObj.year} 市長 ${fieldObj.party} 催票率`);
-            if (window.innerWidth < 768) { toggleSidebarMobile(); }
-        }
-
-        function updateCouncilorPartyDropdown() {
-            const yr = document.getElementById("councilor-year-dropdown").value;
-            const partyDrop = document.getElementById("councilor-party-dropdown");
-            partyDrop.innerHTML = "";
-            if (!yr) { partyDrop.innerHTML = '<option value="">-- 請先選擇年份 --</option>'; partyDrop.disabled = true; return; }
-
-            let fields = parsedMeta.councilorFields.filter(f => f.year === yr);
-            partyDrop.innerHTML = '<option value="">-- 請選擇政黨總體指標 --</option>';
-            fields.forEach(f => { partyDrop.innerHTML += `<option value="councilor_${f.field}">${f.party} 總催票率</option>`; });
-            partyDrop.disabled = false;
-        }
-
-        function onCouncilorPartySelectChanged() {
-            const layerId = document.getElementById("councilor-party-dropdown").value;
-            if (!layerId) return;
-            document.querySelectorAll('input[name="map_layer_toggle"]').forEach(r => r.checked = false);
-            resetAllDropdownsExcept("councilor");
-            let fieldObj = parsedMeta.councilorFields.find(f => `councilor_${f.field}` === layerId);
-            switchLayer(layerId, `${fieldObj.year} 議員 ${fieldObj.party} 總催票率`);
-            if (window.innerWidth < 768) { toggleSidebarMobile(); }
-        }
-
-        function updateIndAreaDropdown() {
-            const yr = document.getElementById("ind-year-dropdown").value;
-            const areaDrop = document.getElementById("area-dropdown");
-            const candDrop = document.getElementById("candidate-dropdown");
-
-            areaDrop.innerHTML = "";
-            candDrop.innerHTML = '<option value="">-- 請先選擇選區 --</option>';
-            candDrop.disabled = true;
-
-            if (!yr) {
-                areaDrop.innerHTML = '<option value="">-- 請先選擇年份 --</option>';
-                areaDrop.disabled = true;
+            if (!query) {
+                box.style.display = 'none';
                 return;
             }
 
-            let allInds = Object.values(parsedMeta.individualCouncilors).filter(f => f.year === yr);
-            let availableAreas = Array.from(new Set(allInds.map(f => f.area).filter(a => a !== "未知選區")));
+            let matches = new Set();
+            globalGeoData.features.forEach(f => {
+                let town = f.properties.TOWNNAME;
+                let vill = f.properties.VILLNAME;
+                let full = town + vill;
 
-            const areaOrderWeight = { "士林北投": 1, "內湖南港": 2, "松山信義": 3, "中山大同": 4, "中正萬華": 5, "大安文山": 6 };
-            availableAreas.sort((a, b) => (areaOrderWeight[a] || 99) - (areaOrderWeight[b] || 99));
-
-            areaDrop.innerHTML = '<option value="">-- 請選擇議員選區 --</option>';
-
-            const areaNameDict = {
-                "士林北投": "第1選區（士林、北投）", "內湖南港": "第2選區（內湖、南港）",
-                "松山信義": "第3選區（松山、信義）", "中山大同": "第4選區（中山、大同）",
-                "中正萬華": "第5選區（中正、萬華）", "大安文山": "第6選區（大安、文山）"
-            };
-
-            availableAreas.forEach(areaKey => {
-                let displayName = areaNameDict[areaKey] || areaKey;
-                areaDrop.innerHTML += `<option value="${areaKey}">${displayName}</option>`;
+                if (town.includes(query)) matches.add(town);
+                if (vill.includes(query)) matches.add(vill);
+                if (full.includes(query)) matches.add(full);
             });
-            areaDrop.disabled = false;
-        }
 
-        function updateCandidateDropdown() {
-            const yr = document.getElementById('ind-year-dropdown').value;
-            const areaValue = document.getElementById('area-dropdown').value;
-            const candDrop = document.getElementById('candidate-dropdown');
-            candDrop.innerHTML = '';
-
-            if (!areaValue) {
-                candDrop.innerHTML = '<option value="">-- 請先選擇選區 --</option>';
-                candDrop.disabled = true;
+            if (matches.size === 0) {
+                box.style.display = 'none';
                 return;
             }
 
-            let matchedCandidates = Object.keys(parsedMeta.individualCouncilors).filter(uniqueKey => {
-                let item = parsedMeta.individualCouncilors[uniqueKey];
-                return item.year === yr && item.area === areaValue;
+            box.style.display = 'block';
+            matches.forEach(match => {
+                let item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = match.replace(new RegExp(query, 'g'), `<strong>${query}</strong>`);
+                item.onclick = function () {
+                    document.getElementById('search-input').value = match;
+                    box.style.display = 'none';
+                    searchArea();
+                };
+                box.appendChild(item);
             });
+        }
 
-            if (matchedCandidates.length > 0) {
-                candDrop.innerHTML = '<option value="">-- 請選擇議員候選人 --</option>';
-                matchedCandidates.sort().forEach(uniqueKey => {
-                    let item = parsedMeta.individualCouncilors[uniqueKey];
-                    candDrop.innerHTML += `<option value="${uniqueKey}">${item.candidateName} (${item.party})</option>`;
-                });
-                candDrop.disabled = false;
+        // 🌟 更新：無黨籍或小黨的顏色判斷改為深灰色 (#757575)
+        function getFillColor(status) {
+            let cleanStatus = status ? status.trim() : '';
+            
+            if (cleanStatus.includes('綠守住')) return '#2E7D32';
+            if (cleanStatus.includes('藍守住')) return '#1565C0';
+            if (cleanStatus.includes('綠翻盤')) return 'url(#pattern-green-flip)';
+            if (cleanStatus.includes('藍翻盤')) return 'url(#pattern-blue-flip)';
+            
+            // 只要標籤內不含藍綠，但有「守住」或「翻盤」即可觸發小黨專屬顏色(灰色)
+            if (cleanStatus.includes('守住')) return '#757575'; 
+            if (cleanStatus.includes('翻盤')) return 'url(#pattern-other-flip)';
+
+            return '#cccccc';
+        }
+
+        function updateInfoPanel(data, areaName) {
+            document.getElementById('info-name').innerText = areaName;
+
+            if (carouselInterval) clearInterval(carouselInterval);
+
+            if (!data) {
+                document.getElementById('vs-result-text').innerText = '-';
+                document.getElementById('info-status').innerText = '無資料';
+                document.getElementById('info-status').className = 'info-status bg-gray';
+
+                document.getElementById('photo-green').style.display = 'none';
+                document.getElementById('photo-blue').style.display = 'none';
+
+                document.getElementById('carousel-title').innerText = '等待資料...';
+                document.getElementById('carousel-green-votes').innerText = '0';
+                document.getElementById('carousel-blue-votes').innerText = '0';
+                document.getElementById('carousel-third-votes').innerText = '0';
+                document.getElementById('carousel-green-bar').style.width = '0%';
+                document.getElementById('carousel-blue-bar').style.width = '0%';
+                document.getElementById('carousel-third-bar').style.width = '0%';
+
+                document.getElementById('carousel-green-label').innerText = '綠營得票';
+                document.getElementById('carousel-blue-label').innerText = '藍營得票';
+                return;
+            }
+
+            let status = data['狀態標籤'] ? data['狀態標籤'].trim() : '';
+            let statusEl = document.getElementById('info-status');
+            statusEl.innerText = status || '無標籤';
+            
+            if (status.includes('綠')) {
+                statusEl.className = 'info-status bg-green';
+            } else if (status.includes('藍')) {
+                statusEl.className = 'info-status bg-blue';
+            } else if (status.includes('守住') || status.includes('翻盤')) {
+                // 套用第三勢力顏色
+                statusEl.className = 'info-status bg-other';
             } else {
-                candDrop.innerHTML = '<option value="">（該選區大表數據建立中）</option>';
-                candDrop.disabled = true;
+                statusEl.className = 'info-status bg-gray';
+            }
+
+            let gVotesCurrStr = (data['民進黨＿沈伯洋＿得票'] || data['綠營得票數'] || data['民進黨得票數'] || '0').toString();
+            let bVotesCurrStr = (data['國民黨＿蔣萬安＿得票'] || data['藍營得票數'] || data['國民黨得票數'] || '0').toString();
+
+            let gVotesCurr = parseInt(gVotesCurrStr.replace(/[, ]/g, '')) || 0;
+            let bVotesCurr = parseInt(bVotesCurrStr.replace(/[, ]/g, '')) || 0;
+            let totalCurr = Math.max(1, gVotesCurr + bVotesCurr);
+            let diff = Math.abs(gVotesCurr - bVotesCurr);
+
+            let diffPct = totalCurr > 0 ? ((diff / totalCurr) * 100).toFixed(1) : 0;
+
+            let resultEl = document.getElementById('vs-result-text');
+            let photoGreen = document.getElementById('photo-green');
+            let photoBlue = document.getElementById('photo-blue');
+
+            if (gVotesCurr > bVotesCurr) {
+                resultEl.innerHTML = `沈伯洋贏<br>${diff.toLocaleString()} 票 <span style="font-size:15px;">(${diffPct}%)</span>`;
+                photoGreen.style.display = 'block';
+                photoBlue.style.display = 'none';
+            } else if (bVotesCurr > gVotesCurr) {
+                resultEl.innerHTML = `蔣萬安贏<br>${diff.toLocaleString()} 票 <span style="font-size:15px;">(${diffPct}%)</span>`;
+                photoGreen.style.display = 'none';
+                photoBlue.style.display = 'block';
+            } else {
+                resultEl.innerText = '雙方平手';
+                photoGreen.style.display = 'none';
+                photoBlue.style.display = 'none';
+            }
+
+            let baseSize = 130;
+            let targetSize = baseSize;
+
+            if (totalCurr > 0) {
+                let scaleMultiplier = 2.0; 
+                targetSize = baseSize + (diffPct * scaleMultiplier);
+            }
+
+            targetSize = Math.max(100, Math.min(targetSize, 200));
+
+            if (gVotesCurr > bVotesCurr) {
+                photoGreen.style.height = targetSize + 'px';
+            } else if (bVotesCurr > gVotesCurr) {
+                photoBlue.style.height = targetSize + 'px';
+            }
+
+            let gPrevStr = (data['2022民進黨得票數'] || data['2022民進黨得票'] || '0').toString();
+            let bPrevStr = (data['2022國民黨得票數'] || data['2022國民黨得票'] || '0').toString();
+
+            let tPrevStr = '0';
+            for (let key in data) {
+                if (key.includes('黃珊珊') || key.includes('民眾黨') || key.includes('無黨籍') || key.includes('第三')) {
+                    tPrevStr = data[key] ? data[key].toString() : '0';
+                    break;
+                }
+            }
+
+            let gVotesPrev = parseInt(gPrevStr.replace(/[, ]/g, '')) || 0;
+            let bVotesPrev = parseInt(bPrevStr.replace(/[, ]/g, '')) || 0;
+            let tVotesPrev = parseInt(tPrevStr.replace(/[, ]/g, '')) || 0;
+            
+            let totalPrev = Math.max(1, gVotesPrev + bVotesPrev + tVotesPrev);
+            
+            let gPctCurr = ((gVotesCurr / totalCurr) * 100).toFixed(1);
+            let bPctCurr = ((bVotesCurr / totalCurr) * 100).toFixed(1);
+            
+            let gDiff = ((gVotesCurr / totalCurr) * 100) - ((gVotesPrev / totalPrev) * 100);
+            let bDiff = ((bVotesCurr / totalCurr) * 100) - ((bVotesPrev / totalPrev) * 100);
+            
+            let gDiffStr = (gDiff >= 0 ? '+' : '') + gDiff.toFixed(1) + '%';
+            let bDiffStr = (bDiff >= 0 ? '+' : '') + bDiff.toFixed(1) + '%';
+
+            let globalMaxVotes = Math.max(gVotesCurr, bVotesCurr, gVotesPrev, bVotesPrev, tVotesPrev, 1);
+
+            let is2026 = true;
+
+            function renderCarousel() {
+                if (is2026) {
+                    document.getElementById('carousel-title').innerText = "2026年 本屆得票數";
+                    document.getElementById('carousel-green-label').innerText = "沈伯洋得票";
+                    document.getElementById('carousel-blue-label').innerText = "蔣萬安得票";
+
+                    document.getElementById('carousel-third-item').style.display = 'none';
+
+                    document.getElementById('carousel-green-votes').innerText = `${gVotesCurr.toLocaleString()} (得票率 ${gPctCurr}% | 較上屆 ${gDiffStr})`;
+                    document.getElementById('carousel-blue-votes').innerText = `${bVotesCurr.toLocaleString()} (得票率 ${bPctCurr}% | 較上屆 ${bDiffStr})`;
+
+                    document.getElementById('carousel-green-bar').style.width = (gVotesCurr / globalMaxVotes * 100) + '%';
+                    document.getElementById('carousel-blue-bar').style.width = (bVotesCurr / globalMaxVotes * 100) + '%';
+                } else {
+                    document.getElementById('carousel-title').innerText = "2022年 上屆得票數";
+                    document.getElementById('carousel-green-label').innerText = "陳時中得票";
+                    document.getElementById('carousel-blue-label').innerText = "蔣萬安得票";
+                    document.getElementById('carousel-third-label').innerText = "黃珊珊得票";
+
+                    document.getElementById('carousel-third-item').style.display = 'block';
+
+                    document.getElementById('carousel-green-votes').innerText = gVotesPrev.toLocaleString();
+                    document.getElementById('carousel-blue-votes').innerText = bVotesPrev.toLocaleString();
+                    document.getElementById('carousel-third-votes').innerText = tVotesPrev.toLocaleString();
+
+                    document.getElementById('carousel-green-bar').style.width = (gVotesPrev / globalMaxVotes * 100) + '%';
+                    document.getElementById('carousel-blue-bar').style.width = (bVotesPrev / globalMaxVotes * 100) + '%';
+                    document.getElementById('carousel-third-bar').style.width = (tVotesPrev / globalMaxVotes * 100) + '%';
+                }
+                is2026 = !is2026;
+            }
+
+            renderCarousel();
+            carouselInterval = setInterval(renderCarousel, 3500);
+        }
+
+        function resetMap() {
+            isPinned = false;
+            document.getElementById('btn-reset').style.display = 'none';
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-suggestions').style.display = 'none';
+
+            d3.select("#map-group").transition().duration(750).attr("transform", "");
+            d3.selectAll(".district").classed("fade", false).classed("hover-active", false);
+
+            let totalData = globalSheetData.find(row => row['行政區'] === '全市');
+            updateInfoPanel(totalData, '台北市全市');
+        }
+
+        function pinAndZoom(d) {
+            isPinned = true;
+            document.getElementById('btn-reset').style.display = 'block';
+            document.getElementById('search-suggestions').style.display = 'none';
+
+            let currentTown = d.properties.TOWNNAME;
+            d3.selectAll(".district").classed("fade", true).classed("hover-active", false);
+
+            if (currentLevel === 'district') {
+                d3.selectAll(".district").filter(p => p.properties.TOWNNAME === currentTown).classed("fade", false).classed("hover-active", true);
+                updateInfoPanel(d.sheetData, currentTown);
+            } else {
+                d3.selectAll(".district").filter(p => p === d).classed("fade", false).classed("hover-active", true);
+                updateInfoPanel(d.sheetData, `${currentTown} ${d.properties.VILLNAME}`);
+            }
+
+            let bounds = pathGenerator.bounds(d);
+            let dx = bounds[1][0] - bounds[0][0];
+            let dy = bounds[1][1] - bounds[0][1];
+            let x = (bounds[0][0] + bounds[1][0]) / 2;
+            let y = (bounds[0][1] + bounds[1][1]) / 2;
+
+            let maxScale = currentLevel === 'district' ? 2.5 : 4.5;
+            let scale = Math.max(1, Math.min(maxScale, 0.9 / Math.max(dx / 700, dy / 500)));
+            let translate = [700 / 2 - scale * x, 500 / 2 - scale * y];
+
+            d3.select("#map-group").transition().duration(750)
+                .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+        }
+
+        function searchArea() {
+            let query = document.getElementById('search-input').value.trim();
+            document.getElementById('search-suggestions').style.display = 'none';
+            if (!query) return;
+
+            let targetFeature = null;
+            let targetLevel = currentLevel;
+
+            let villageMatch = globalGeoData.features.find(f => f.properties.VILLNAME === query || (f.properties.TOWNNAME + f.properties.VILLNAME) === query);
+
+            if (villageMatch) {
+                targetFeature = villageMatch;
+                targetLevel = 'village';
+            } else {
+                let districtMatch = globalGeoData.features.find(f => f.properties.TOWNNAME === query);
+                if (districtMatch) {
+                    targetFeature = districtMatch;
+                    targetLevel = 'district';
+                }
+            }
+
+            if (!targetFeature) {
+                alert("找不到該區域，請輸入完整的區名或里名 (例如: 萬華區 或 榮德里)");
+                return;
+            }
+
+            if (currentLevel !== targetLevel) {
+                switchLevel(targetLevel);
+            }
+            pinAndZoom(targetFeature);
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                searchArea();
             }
         }
 
-        function onCandidateSelectChanged() {
-            const uniqueKey = document.getElementById('candidate-dropdown').value;
-            if (!uniqueKey) return;
+        function renderMap(level) {
+            resetMap();
+            const mapGroup = d3.select("#map-group");
+            mapGroup.selectAll("*").remove();
 
-            document.querySelectorAll('input[name="map_layer_toggle"]').forEach(radio => radio.checked = false);
-            resetAllDropdownsExcept("individual");
+            let projection = d3.geoIdentity().reflectY(true).fitSize([700, 500], globalGeoData);
+            pathGenerator = d3.geoPath().projection(projection);
 
-            const layerId = `ind_councilor_${uniqueKey}`;
-            const item = parsedMeta.individualCouncilors[uniqueKey];
-            switchLayer(layerId, `${item.year} 議員 ${item.candidateName} 個人催票率`);
+            mapGroup.selectAll("path")
+                .data(globalGeoData.features)
+                .enter()
+                .append("path")
+                .attr("d", pathGenerator)
+                .attr("class", "district")
+                .style("stroke-width", level === 'district' ? "0.1px" : "0.5px")
+                .style("stroke", level === 'district' ? "rgba(255,255,255,0.2)" : "#fff")
+                .attr("fill", function (d) {
+                    let districtName = d.properties.TOWNNAME;
+                    let villName = d.properties.VILLNAME;
+                    let data = globalSheetData.find(row => row['行政區']?.trim() === districtName && row['里別']?.trim() === (level === 'district' ? '全區' : villName));
+                    d.sheetData = data;
+                    return data ? getFillColor(data['狀態標籤']) : '#ccc';
+                })
+                .on("mouseover", function (event, d) {
+                    if (isPinned) return;
 
-            if (window.innerWidth < 768) { toggleSidebarMobile(); }
-        }
+                    let currentTown = d.properties.TOWNNAME;
+                    let currentVill = d.properties.VILLNAME;
 
-        function resetAllDropdownsExcept(activeArea) {
-            if (activeArea !== "mayor") {
-                document.getElementById("mayor-year-dropdown").value = "";
-                document.getElementById("mayor-party-dropdown").innerHTML = '<option value="">-- 請先選擇年份 --</option>';
-                document.getElementById("mayor-party-dropdown").disabled = true;
-            }
-            if (activeArea !== "councilor") {
-                document.getElementById("councilor-year-dropdown").value = "";
-                document.getElementById("councilor-party-dropdown").innerHTML = '<option value="">-- 請先選擇年份 --</option>';
-                document.getElementById("councilor-party-dropdown").disabled = true;
-            }
-            if (activeArea !== "individual") {
-                document.getElementById("ind-year-dropdown").value = "";
-                document.getElementById("area-dropdown").innerHTML = '<option value="">-- 請先選擇年份 --</option>';
-                document.getElementById("area-dropdown").disabled = true;
-                document.getElementById("candidate-dropdown").innerHTML = '<option value="">-- 請先選擇選區 --</option>';
-                document.getElementById("candidate-dropdown").disabled = true;
-            }
-        }
+                    d3.selectAll(".district").classed("fade", true).classed("hover-active", false);
 
-        // ==================== 5. 地圖著色與精密缺失值分流 ====================
-        function createLeafletLayer(layerId, type, year, field, layerName) {
-            let geoJsonInstance = L.geoJson(geojsonRawData, {
-                style: function (feature) {
-                    let key = String(feature.properties.TOWNNAME || '').trim() + String(feature.properties.VILLNAME || '').trim();
-                    let fillColor = "transparent", fillOpacity = 0, strokeColor = "#d3d3d3", strokeWidth = 0.4;
-
-                    if (electionData[key]) {
-                        let d = electionData[key];
-                        if (type === 'bivariate') {
-                            let leadParty = d[`${year}_市長_領先政黨`] || '';
-                            let leadMargin = d[`${year}_市長_領先差距`] || 0;
-                            fillColor = getBivariateColor(leadParty, leadMargin);
-                            fillOpacity = 0.8; strokeColor = "#ffffff";
-                        } else {
-                            let rawRowData = d.raw || {};
-                            let hasColumn = field in rawRowData;
-                            let isNotEmpty = hasColumn && rawRowData[field] !== undefined && String(rawRowData[field]).trim() !== "";
-
-                            if (isNotEmpty) {
-                                let val = parseFloat(String(rawRowData[field]).replace(/%/g, ''));
-                                if (isNaN(val)) val = 0;
-
-                                let isIndividual = type === 'individual_candidate';
-                                fillColor = getSinglePartyColor(field, val, isIndividual);
-                                fillOpacity = 0.8; strokeColor = "#ffffff"; strokeWidth = 0.7;
-                            } else {
-                                fillColor = "transparent"; fillOpacity = 0; strokeColor = "#d3d3d3"; strokeWidth = 0.4;
-                            }
-                        }
-                    }
-                    return { fillColor: fillColor, color: strokeColor, weight: strokeWidth, fillOpacity: fillOpacity };
-                },
-                onEachFeature: function (feature, layer) {
-                    let tName = String(feature.properties.TOWNNAME || '').trim();
-                    let vName = String(feature.properties.VILLNAME || '').trim();
-                    let key = tName + vName;
-
-                    let popupHtml = `<div style="font-family:'Helvetica Neue',Arial,sans-serif; width:260px; padding:3px; color:#333;">
-                        <div style="font-size:14px; font-weight:bold; border-bottom:2px solid #555; padding-bottom:4px; margin-bottom:6px;">📍 ${tName} ➔ ${vName}</div>`;
-
-                    if (electionData[key]) {
-                        let d = electionData[key];
-                        if (type === 'bivariate') {
-                            let leader = d[`${year}_市長_領先政黨`] || "無";
-                            let margin = d[`${year}_市長_領微差距`] || 0;
-                            popupHtml += `<div style="margin-bottom:6px; font-size:12px;">🏆 <b>${year} 市長領先</b>: <span style="font-weight:bold; color:#d9534f;">${leader}</span> (+${margin.toFixed(2)}%)</div>`;
-                        } else if (type === 'individual_candidate') {
-                            let uniqueKey = field.replace("ind_councilor_", "");
-                            let item = parsedMeta.individualCouncilors[uniqueKey] || { candidateName: field.split('_')[1] || "候選人" };
-                            let candidateName = item.candidateName;
-                            
-                            let rateValue = d[field] !== undefined ? d[field].toFixed(2) + "%" : "無資料";
-                            popupHtml += `<div style="font-size:12px; margin-bottom:4px;">🎖️ <b>${candidateName} 催票率</b>: <span style="font-weight:bold; color:#1a73e8;">${rateValue}</span></div>`;
-                            
-                            let liveTopCandidate = "無資料";
-                            let liveMaxVotes = -1;
-
-                            Object.keys(parsedMeta.individualCouncilors).forEach(uKey => {
-                                let cItem = parsedMeta.individualCouncilors[uKey];
-                                if (cItem.year === year) { 
-                                    let vRate = d[cItem.field] || 0;
-                                    if (vRate > liveMaxVotes) {
-                                        liveMaxVotes = vRate;
-                                        liveTopCandidate = cItem.candidateName;
-                                    }
-                                }
-                            });
-
-                            if (liveTopCandidate === candidateName && liveMaxVotes > 0) {
-                                popupHtml += `<div style='background:#fff3cd; color:#856404; font-weight:bold; font-size:11px; padding:3px; border-radius:3px; margin-bottom:6px; text-align:center;'>🏆 本里本屆最高票候選人</div>`;
-                            } else {
-                                popupHtml += `<div style="font-size:11px; color:gray; margin-bottom:6px;">🥇 本屆最高票議員: ${liveTopCandidate}</div>`;
-                            }
-                        } else {
-                            let val = parseFloat(d[field]);
-                            let indicatorValue = (d[field] !== undefined && !isNaN(val)) ? val.toFixed(2) + "%" : "無資料";
-                            popupHtml += `<div style="font-size:12px; margin-bottom:6px;">📊 <b>當前指標</b>: <span style="font-weight:bold; color:#0056b3;">${indicatorValue}</span></div>`;
-                        }
-
-                        popupHtml += `<div style="font-size:11px; font-weight:bold; color:#1a73e8; margin:8px 0 2px 0;">🏛️ 歷年市長催票率紀錄</div>`;
-                        popupHtml += `<table style="width:100%; font-size:10px; border-collapse:collapse; text-align:center;">
-                            <tr style="color:#666; background:#f1f3f4;"><th>年份</th><th>國民黨</th><th>民進黨</th><th>民眾/其他</th></tr>`;
-
-                        window.SORTED_YEARS.forEach(y => {
-                            let kmtF = parsedMeta.mayorFields.find(f => f.year === y && f.party.includes("國民黨"));
-                            let dppF = parsedMeta.mayorFields.find(f => f.year === y && (f.party.includes("民進黨") || f.party.includes("民主進步")));
-                            let otherF = parsedMeta.mayorFields.find(f => f.year === y && !f.party.includes("國民黨") && !f.party.includes("民進黨") && !f.party.includes("民主進步"));
-
-                            let kmtVal = kmtF && d[kmtF.field] ? d[kmtF.field].toFixed(1) + "%" : "-";
-                            let dppVal = dppF && d[dppF.field] ? d[dppF.field].toFixed(1) + "%" : "-";
-                            let otherVal = otherF && d[otherF.field] ? d[otherF.field].toFixed(1) + "%" : "-";
-
-                            popupHtml += `<tr style="border-bottom:1px solid #eee;"><td>${y}年</td><td>${kmtVal}</td><td>${dppVal}</td><td>${otherVal}</td></tr>`;
-                        });
-                        popupHtml += `</table>`;
+                    if (level === 'district') {
+                        d3.selectAll(".district").filter(p => p.properties.TOWNNAME === currentTown).classed("fade", false).classed("hover-active", true);
+                        updateInfoPanel(d.sheetData, currentTown);
                     } else {
-                        popupHtml += `<span style='color:gray; font-size:12px;'>（本區無投票資料）</span>`;
+                        d3.select(this).classed("fade", false).classed("hover-active", true);
+                        updateInfoPanel(d.sheetData, `${currentTown} ${currentVill}`);
                     }
-                    popupHtml += `</div>`;
+                })
+                .on("mouseout", function (event, d) {
+                    if (isPinned) return;
+                    d3.selectAll(".district").classed("fade", false).classed("hover-active", false);
+                    let totalData = globalSheetData.find(row => row['行政區'] === '全市');
+                    updateInfoPanel(totalData, '台北市全市');
+                })
+                .on("click", function (event, d) {
+                    pinAndZoom(d);
+                });
+        }
 
-                    layer.bindPopup(popupHtml, { closeOnClick: false, autoPan: true });
+        function switchLevel(level) {
+            if (currentLevel === level) return;
+            currentLevel = level;
+            document.getElementById('btn-district').classList.remove('active');
+            document.getElementById('btn-village').classList.remove('active');
+            document.getElementById(`btn-${level}`).classList.add('active');
+            renderMap(level);
+        }
 
-                    layer.on({
-                        mouseover: function () { if (lastFocusedLayer === this || window.innerWidth < 768) return; this.setStyle({ color: '#333333', weight: 2.0 }); },
-                        mouseout: function (e) { if (lastFocusedLayer === this || window.innerWidth < 768) return; geoJsonInstance.resetStyle(e.target); },
-                        click: function (e) {
-                            if (lastFocusedLayer && lastFocusedLayer !== this) { geoJsonInstance.resetStyle(lastFocusedLayer); }
-                            lastFocusedLayer = this;
-                            this.setStyle({ color: '#1a73e8', weight: 3.0, fillOpacity: 0.85 });
-                            map.flyTo(e.latlng, window.innerWidth < 768 ? 14 : 15, { animate: true, duration: 1.2 });
-                        }
-                    });
-                }
+        function init() {
+            Promise.all([
+                d3.csv(GOOGLE_SHEET_CSV_URL + '&t=' + new Date().getTime()),
+                d3.json(TAIPEI_GEOJSON_URL)
+            ]).then(function ([sheetData, geoData]) {
+                globalSheetData = sheetData;
+                globalGeoData = geoData;
+                renderMap('district');
+            }).catch(function (error) {
+                console.error("❌ 讀取資料發生錯誤：", error);
             });
-            layerInstances[layerId] = geoJsonInstance;
         }
 
-        // ==================== 6. 圖例更新 ====================
-        function switchLayer(layerId, layerName) {
-            if (currentActiveLayer && map.hasLayer(currentActiveLayer)) { map.removeLayer(currentActiveLayer); }
-            activeTrophyGroup.clearLayers();
-            if (lastFocusedLayer) { map.closePopup(); lastFocusedLayer = null; }
-
-            currentActiveLayer = layerInstances[layerId];
-            if (currentActiveLayer) { currentActiveLayer.addTo(map); } else { return; }
-
-            const titleEl = document.getElementById('legend-title');
-            const contentEl = document.getElementById('legend-content');
-            titleEl.innerHTML = "📊 " + layerName;
-
-            if (layerId.includes("bivariate")) {
-                contentEl.innerHTML = `
-                    <div style="font-size:11px; color:#555; margin-bottom:6px; line-height:1.4;">
-                        🎨 <b>顏色</b>：藍=國民黨、綠=民進黨/泛綠、灰/白=拉鋸膠著。<br>
-                        🌓 <b>深淺</b>：色塊越深，代表領先第一名的優勢越大。
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:5px;">
-                        <div style="display:flex; align-items:center;"><span style="width:50px; font-size:11px;"><b>藍營領先</b>:</span><div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7fbff, #08306b);"></div></div>
-                        <div style="display:flex; align-items:center;"><span style="width:50px; font-size:11px;"><b>綠營領先</b>:</span><div style="height:10px; flex-grow:1; border-radius:2px; background:linear-gradient(to right, #f7fcf0, #00441b);"></div></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:10px; color:#777; font-weight:bold; margin-top:5px; padding-left:50px;"><span>0% (五五波)</span><span>${globalMaxMargin.toFixed(1)}% (強勢碾壓)</span></div>`;
-            } else {
-                let colorRangeHtml = '';
-                let currentMaxDisplay = globalMaxRate;
-
-                if (layerId.includes("國民黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #3182bd)`;
-                else if (layerId.includes("民進黨") || layerId.includes("民主進步") || layerId.includes("基進")) colorRangeHtml = `linear-gradient(to right, #ffffff, #31a354)`;
-                else if (layerId.includes("民眾黨") || layerId.includes("台灣民眾")) colorRangeHtml = `linear-gradient(to right, #ffffff, #008080)`;
-                else if (layerId.includes("新黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #8b6508)`;
-                else if (layerId.includes("時代力量")) colorRangeHtml = `linear-gradient(to right, #ffffff, #ffcc00)`;
-                else if (layerId.includes("親民黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #ff8800)`;
-                else if (layerId.includes("無黨籍") || layerId.includes("無黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #555555)`;
-                else {
-                    let uniqueKey = layerId.replace("ind_councilor_", "");
-                    let item = parsedMeta.individualCouncilors[uniqueKey];
-                    let party = item ? item.party : "";
-                    
-                    if (party.includes("國民黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #3182bd)`;
-                    else if (party.includes("民進黨") || party.includes("民主進步")) colorRangeHtml = `linear-gradient(to right, #ffffff, #31a354)`;
-                    else if (party.includes("民眾") || party.includes("台灣民眾")) colorRangeHtml = `linear-gradient(to right, #ffffff, #008080)`;
-                    else if (party.includes("時代力量")) colorRangeHtml = `linear-gradient(to right, #ffffff, #ffcc00)`;
-                    else if (party.includes("新黨")) colorRangeHtml = `linear-gradient(to right, #ffffff, #8b6508)`;
-                    else if (party.includes("親民")) colorRangeHtml = `linear-gradient(to right, #ffffff, #ff8800)`;
-                    else colorRangeHtml = `linear-gradient(to right, #ffffff, #555555)`;
-                }
-
-                if (layerId.includes("ind_councilor_")) { currentMaxDisplay = globalMaxIndRate; }
-                if (!currentMaxDisplay || currentMaxDisplay < 10) currentMaxDisplay = 65;
-
-                contentEl.innerHTML = `
-                    <div style="font-size:11px; color:#555; margin-bottom:6px; line-height:1.4;">
-                        🎨 <b>顏色</b>：代表該指標之催票率漸層強度。<br>
-                        🏆 <b>第一名標記</b>：地圖上標有 <b>🏆 獎盃</b> 的里，代表該候選人在該里的得票為<b>全體議員第一名</b>！
-                    </div>
-                    <div style="height:15px; width:100%; border-radius:4px; margin-bottom:5px; background:${colorRangeHtml};"></div>
-                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#666; font-weight:bold;">
-                        <span>0.00% (純白)</span>
-                        <span>${currentMaxDisplay.toFixed(2)}% (最高峰)</span>
-                    </div>`;
-
-                if (layerId.includes("ind_councilor_")) {
-                    let uniqueKey = layerId.replace("ind_councilor_", "");
-                    let item = parsedMeta.individualCouncilors[uniqueKey];
-                    let fieldName = item ? item.field : "";
-
-                    if (fieldName) {
-                        let candidatePureName = item.candidateName;
-                        let currentYear = item.year;
-                        let currentArea = item.area;
-                        let groupKey = `${currentYear}_${currentArea}`;
-
-                        currentActiveLayer.eachLayer(l => {
-                            let tName = l.feature.properties.TOWNNAME;
-                            let vName = l.feature.properties.VILLNAME;
-                            let key = tName + vName;
-
-                            let isTopDog = electionData[key] && electionData[key]["最高票紀錄"] && electionData[key]["最高票紀錄"][groupKey] === candidatePureName;
-
-                            if (isTopDog && electionData[key][fieldName] > 0) {
-                                let centerLatLng = l.getBounds().getCenter();
-                                let trophyMarker = L.marker(centerLatLng, {
-                                    icon: L.divIcon({
-                                        html: `<div class="trophy-icon-style" title="${tName}${vName}：${candidatePureName}得票最高！">🏆</div>`,
-                                        iconSize: [26, 26], iconAnchor: [13, 13], className: ''
-                                    })
-                                });
-                                trophyMarker.on('click', function (e) { L.DomEvent.stopPropagation(e); l.fire('click', e); });
-                                activeTrophyGroup.addLayer(trophyMarker);
-                            }
-                        });
-                    }
-                }
-            }
-        }
-
-        function setupSearchControl() {
-            let searchBaseLayer = L.geoJson(geojsonRawData, {
-                style: { opacity: 0, fillOpacity: 0, weight: 0 },
-                onEachFeature: function (f, l) { f.properties.search_name = f.properties.TOWNNAME + f.properties.VILLNAME; }
-            }).addTo(map);
-
-            window.searchControl = new L.Control.Search({
-                layer: searchBaseLayer, propertyName: 'search_name', collapsed: false,
-                zoom: window.innerWidth < 768 ? 14 : 15, textPlaceholder: '輸入區與里名...',
-                marker: L.circleMarker([0, 0], { radius: 0, weight: 0, color: 'transparent', fillColor: 'transparent', fillOpacity: 0, opacity: 0 }),
-                moveToLocation: function (latlng, title, map) { map.flyTo(latlng, window.innerWidth < 768 ? 14 : 15, { animate: true, duration: 1.2 }); }
-            });
-
-            map.addControl(window.searchControl);
-
-            const searchEl = window.searchControl.getContainer();
-            const container = document.getElementById('integrated-search-container');
-            if (searchEl && container) {
-                searchEl.style.position = 'relative'; searchEl.style.top = '0'; searchEl.style.left = '0';
-                searchEl.style.margin = '0'; searchEl.style.width = '100%'; searchEl.style.boxShadow = 'none';
-                searchEl.style.border = '1px solid #ccc'; window.searchControl.getContainer().style.borderRadius = '6px';
-
-                let searchInput = searchEl.querySelector('.search-input');
-                if (searchInput) {
-                    searchInput.style.width = 'calc(100% - 45px)'; searchInput.style.height = '28px';
-                    searchInput.style.border = 'none'; searchInput.style.paddingLeft = '8px';
-                    searchInput.addEventListener('input', function (e) { if (e.target.value.trim() === "") resetFocusState(); });
-                }
-                container.appendChild(searchEl);
-
-                window.searchControl.on('search:locationfound', function (e) {
-                    if (window.innerWidth < 768) { toggleSidebarMobile(); }
-                    setTimeout(() => {
-                        if (currentActiveLayer) {
-                            currentActiveLayer.eachLayer(l => {
-                                if (l.feature.properties.TOWNNAME === e.layer.feature.properties.TOWNNAME &&
-                                    l.feature.properties.VILLNAME === e.layer.feature.properties.VILLNAME) {
-                                    if (lastFocusedLayer && lastFocusedLayer !== l) { currentActiveLayer.resetStyle(lastFocusedLayer); }
-                                    lastFocusedLayer = l;
-                                    l.setStyle({ color: '#1a73e8', weight: 3.0, fillOpacity: 0.85 });
-                                    l.openPopup();
-                                }
-                            });
-                        }
-                    }, 50);
-                }).on('search:collapsed search:cancel', function () { resetFocusState(); });
-            }
-        }
-
-        window.onload = loadDashboardData;
+        init();
     </script>
 </body>
 
