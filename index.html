@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>116年九合一大選台北市結果</title>
+    <title>台北市選票結構矩陣分析</title>
+    <!-- 引入 Plotly.js (繪圖) 與 D3.js (抓取外部 CSV 資料) -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
@@ -19,25 +21,23 @@
 
         .dashboard {
             width: 100%;
-            max-width: 900px;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
-            overflow: hidden; 
+            max-width: 1000px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            padding-bottom: 20px;
         }
 
         .title-section {
-            padding: 25px 25px 15px 25px; 
-            border-bottom: 2px solid #f4f6f8; 
+            padding: 25px 25px 15px 25px;
+            border-bottom: 2px solid #f4f6f8;
             text-align: center;
         }
 
         .main-title {
-            font-size: 32px;
-            font-weight: 900; 
+            font-size: 30px;
+            font-weight: 900;
             color: #333;
             margin: 0;
             margin-bottom: 10px;
@@ -50,309 +50,82 @@
             line-height: 1.5;
         }
 
-        .map-section {
-            width: 100%;
-            height: 50vh;
-            min-height: 450px;
-            background: white;
+        .controls-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
             padding: 20px;
-            border-radius: 0;
-            box-shadow: none;
-            border-bottom: 2px solid #f4f6f8; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            box-sizing: border-box;
-        }
-
-        .info-section {
-            width: 100%;
-            background: white;
-            padding: 25px;
-            border-radius: 0;
-            box-shadow: none;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            box-sizing: border-box;
-        }
-        
-        .info-name {
-            font-size: 28px;
-            font-weight: bold;
-            color: #222;
-            margin: 0;
-            text-align: left;
-        }
-
-        .header-controls {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 15px;
-            align-items: center;
+            background-color: #fafbfc;
+            border-bottom: 1px solid #eee;
             flex-wrap: wrap;
-            gap: 10px;
         }
 
-        .left-controls,
-        .right-controls {
+        .btn-group {
             display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 8px 18px;
-            font-size: 15px;
-            font-weight: bold;
-            border: 2px solid #333;
-            background-color: white;
-            color: #333;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn:hover {
-            background-color: #f0f0f0;
-        }
-
-        .btn.active {
-            background-color: #333;
-            color: white;
-        }
-
-        .search-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        #search-input {
-            padding: 8px 15px;
-            font-size: 15px;
-            border: 2px solid #ccc;
-            border-radius: 20px;
-            outline: none;
-            transition: border-color 0.2s;
-            width: 180px;
-        }
-
-        #search-input:focus {
-            border-color: #333;
-        }
-
-        #search-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
+            background: #fff;
             border: 1px solid #ccc;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            margin-top: 5px;
-        }
-
-        .suggestion-item {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-            font-size: 15px;
-        }
-
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-
-        .suggestion-item:hover {
-            background-color: #f0f0f0;
-            color: #2E7D32;
-            font-weight: bold;
-        }
-
-        #btn-reset {
-            display: none;
-            background-color: #e74c3c;
-            color: white;
-            border-color: #e74c3c;
-        }
-
-        #btn-reset:hover {
-            background-color: #c0392b;
-            border-color: #c0392b;
-        }
-
-        #map-container {
-            width: 100%;
-            flex: 1;
-            min-height: 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-            max-height: 100%;
-            background-color: transparent;
-        }
-
-        .district {
-            stroke: #ffffff;
-            cursor: pointer;
-            transition: opacity 0.3s ease;
-        }
-
-        .district.fade {
-            opacity: 0.2;
-        }
-
-        .district.hover-active {
-            opacity: 1;
-            stroke: #333;
-            stroke-width: 1.5px !important;
-        }
-
-        .info-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
-            min-height: 110px;
-            position: relative;
-        }
-
-        .info-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 5px;
-        }
-
-        .info-right {
-            display: flex;
-            align-items: flex-end;
-            gap: 40px;
-        }
-
-        .vs-result-text {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            text-align: right;
-            line-height: 1.5;
-            margin-bottom: 5px;
-        }
-
-        .winner-photo-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .candidate-photo {
-            max-width: 160px;
-            height: 150px !important;
-            object-fit: contain;
-            position: absolute;
-            bottom: 0;
-        }
-
-        .info-status {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            width: fit-content;
-        }
-
-        /* 各黨派顏色定義 */
-        .bg-green { background-color: #2E7D32; }
-        .bg-blue { background-color: #1565C0; }
-        .bg-other { background-color: #757575; } /* 🌟 第三勢力專用色改為深灰色 */
-        .bg-gray { background-color: #999; }
-        
-        .text-green { color: #2E7D32; }
-        .text-blue { color: #1565C0; }
-        .bg-cyan { background-color: #00BCD4; }
-        .text-cyan { color: #0097A7; }
-
-        .vote-item {
-            margin-bottom: 15px;
-        }
-
-        .vote-header {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            margin-bottom: 6px;
-            font-size: 15px;
-        }
-
-        .bar-bg {
-            width: 100%;
-            height: 12px;
-            background: #eee;
-            border-radius: 6px;
+            border-radius: 20px;
             overflow: hidden;
         }
 
-        .bar-fill {
-            height: 100%;
-            transition: width 0.6s ease-out;
-        }
-
-        .carousel-section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-        }
-
-        .carousel-header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 15px;
+        .toggle-btn {
+            padding: 8px 20px;
+            border: none;
+            background: white;
             color: #555;
-            transition: color 0.3s;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
         }
 
-        @media (max-width: 800px) {
-            .header-controls {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .left-controls,
-            .right-controls {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            .search-wrapper {
-                flex: 1;
-                min-width: 200px;
-            }
-            #search-input {
-                width: 100%;
-                box-sizing: border-box;
-            }
+        .toggle-btn.active {
+            background: #333;
+            color: white;
+        }
+
+        .toggle-btn:not(.active):hover {
+            background: #f0f0f0;
+        }
+
+        .select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: #333;
+        }
+
+        #plot-container {
+            width: 100%;
+            height: 650px;
+            position: relative;
+        }
+        
+        #loading-text {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: bold;
+            color: #666;
         }
     </style>
 </head>
@@ -360,496 +133,234 @@
 <body>
 
     <div class="dashboard">
-        <!-- 標題區塊 -->
         <div class="title-section">
-            <h1 class="main-title">116年九合一大選台北市結果</h1>
-            <p class="sub-title">比較2022年、2026年兩屆選舉結果，板塊顏色為該里得票最高的侯選人黨籍顏色，<br>若本屆得票最高者與上一屆不同，則視為「翻盤」；相同則視為「守住」。</p>
+            <h1 class="main-title">📊 台北市選票結構矩陣分析 (中央 vs 地方)</h1>
+            <p class="sub-title">
+                X軸: 中央層級 (不分區立委) 藍綠催票率差 ｜ Y軸: 地方層級 (市長選舉) 藍綠催票率差<br>
+                數值 > 0 代表藍營領先，數值 < 0 代表綠營領先
+            </p>
         </div>
 
-        <!-- 上方：地圖區 -->
-        <div class="map-section">
-            <div class="header-controls">
-                <div class="left-controls">
-                    <button id="btn-district" class="btn active" onclick="switchLevel('district')">依區別</button>
-                    <button id="btn-village" class="btn" onclick="switchLevel('village')">依里別</button>
-                </div>
-                <div class="right-controls">
-                    <div class="search-wrapper">
-                        <input type="text" id="search-input" placeholder="搜尋區名或里名..." oninput="handleSearchInput()"
-                            onkeypress="handleEnter(event)">
-                        <div id="search-suggestions"></div>
-                    </div>
-                    <button id="btn-search" class="btn" onclick="searchArea()">搜尋</button>
-                    <button id="btn-reset" class="btn" onclick="resetMap()">返回全市</button>
-                </div>
+        <div class="controls-section">
+            <div class="btn-group" id="time-group">
+                <button class="toggle-btn active" data-value="2020與2022年">⏳ 2020 與 2022 年</button>
+                <button class="toggle-btn" data-value="2024與2026年">⏳ 2024 與 2026 年</button>
             </div>
-            <div id="map-container">
-                <svg id="map-svg" viewBox="0 0 700 500" preserveAspectRatio="xMidYMid meet">
-                    <defs>
-                        <!-- 綠營翻盤斜線 -->
-                        <pattern id="pattern-green-flip" width="10" height="10" patternTransform="rotate(45)"
-                            patternUnits="userSpaceOnUse">
-                            <rect width="10" height="10" fill="#2E7D32"></rect>
-                            <line x1="0" y1="0" x2="0" y2="10" stroke="#81C784" stroke-width="3"></line>
-                        </pattern>
-                        <!-- 藍營翻盤斜線 -->
-                        <pattern id="pattern-blue-flip" width="10" height="10" patternTransform="rotate(45)"
-                            patternUnits="userSpaceOnUse">
-                            <rect width="10" height="10" fill="#1565C0"></rect>
-                            <line x1="0" y1="0" x2="0" y2="10" stroke="#90CAF9" stroke-width="3"></line>
-                        </pattern>
-                        <!-- 🌟 更新：第三勢力/小黨翻盤斜線改為深淺灰色 -->
-                        <pattern id="pattern-other-flip" width="10" height="10" patternTransform="rotate(45)"
-                            patternUnits="userSpaceOnUse">
-                            <rect width="10" height="10" fill="#757575"></rect>
-                            <line x1="0" y1="0" x2="0" y2="10" stroke="#BDBDBD" stroke-width="3"></line>
-                        </pattern>
-                    </defs>
-                    <g id="map-group"></g>
-                </svg>
+
+            <div class="select-wrapper">
+                📍 選擇地區: 
+                <select id="region-select">
+                    <option value="台北市全區">台北市全區</option>
+                    <option value="松山區">松山區</option>
+                    <option value="信義區">信義區</option>
+                    <option value="大安區">大安區</option>
+                    <option value="中山區">中山區</option>
+                    <option value="中正區">中正區</option>
+                    <option value="大同區">大同區</option>
+                    <option value="萬華區">萬華區</option>
+                    <option value="文山區">文山區</option>
+                    <option value="南港區">南港區</option>
+                    <option value="內湖區">內湖區</option>
+                    <option value="士林區">士林區</option>
+                    <option value="北投區">北投區</option>
+                </select>
             </div>
         </div>
 
-        <!-- 下方：資訊面板區 -->
-        <div class="info-section">
-            <div class="info-header-row">
-                <!-- 左側：地區名稱與標籤 -->
-                <div class="info-left">
-                    <h2 class="info-name" id="info-name">請在地圖上選擇區域</h2>
-                    <div id="info-status" class="info-status bg-gray">等待選擇...</div>
-                </div>
-
-                <!-- 右側：勝負票數與勝者頭像 -->
-                <div class="info-right">
-                    <div id="vs-result-text" class="vs-result-text">-</div>
-                    <div class="winner-photo-container">
-                        <img id="photo-green" class="candidate-photo" src="puma.png" alt="沈伯洋" style="display: none;">
-                        <img id="photo-blue" class="candidate-photo" src="wanan.png" alt="蔣萬安" style="display: none;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 自動輪播長條圖 -->
-            <div class="carousel-section">
-                <div class="carousel-header">
-                    <div class="carousel-title" id="carousel-title">等待資料...</div>
-                </div>
-
-                <div class="vote-item">
-                    <div class="vote-header text-green">
-                        <span id="carousel-green-label">綠營得票</span>
-                        <span id="carousel-green-votes">0</span>
-                    </div>
-                    <div class="bar-bg">
-                        <div class="bar-fill bg-green" id="carousel-green-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="vote-item">
-                    <div class="vote-header text-blue">
-                        <span id="carousel-blue-label">藍營得票</span>
-                        <span id="carousel-blue-votes">0</span>
-                    </div>
-                    <div class="bar-bg">
-                        <div class="bar-fill bg-blue" id="carousel-blue-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <!-- 2022 第三勢力專用區塊 -->
-                <div class="vote-item" id="carousel-third-item" style="display: none;">
-                    <div class="vote-header text-cyan">
-                        <span id="carousel-third-label">第三勢力得票</span>
-                        <span id="carousel-third-votes">0</span>
-                    </div>
-                    <div class="bar-bg">
-                        <div class="bar-fill bg-cyan" id="carousel-third-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
+        <div id="plot-container">
+            <div id="loading-text">🔄 正在連線抓取 Google Sheet 資料，請稍候...</div>
         </div>
     </div>
 
     <script>
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOdiY7lUyovm-a3-yLveLIkzUibwRVJw6ueYEl1ZvDub16t7SaP2N-ZaTK43O6SiCsaLs6p-om_yZk/pub?gid=1892897354&single=true&output=csv';
-        const TAIPEI_GEOJSON_URL = 'https://gist.githubusercontent.com/JJBatman-FW/dfc0d93794df27e14e8d26954a644d70/raw';
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRCd7gHCxB1g0SYtSBbFl5WlGomi_2Fmuc7MaX_buo0wyEINPVhteD681VMBscC66FN7MLITQMgrPj/pub?gid=1950104714&single=true&output=csv';
+        const districts = ['松山區', '信義區', '大安區', '中山區', '中正區', '大同區', '萬華區', '文山區', '南港區', '內湖區', '士林區', '北投區'];
+        
+        let globalData = [];
+        let currentTime = '2020與2022年';
+        let currentRegion = '台北市全區';
+        let axisBound = 50; 
+        let isFirstPlot = true; 
 
-        let globalSheetData = [];
-        let globalGeoData = null;
-        let currentLevel = 'district';
-
-        let isPinned = false;
-        let pathGenerator;
-        let carouselInterval = null;
-
-        document.addEventListener('click', function (event) {
-            let wrapper = document.querySelector('.search-wrapper');
-            let box = document.getElementById('search-suggestions');
-            if (wrapper && !wrapper.contains(event.target)) {
-                box.style.display = 'none';
+        // ==========================================
+        // 1. 抓取與解析 CSV 資料
+        // ==========================================
+        d3.csv(CSV_URL).then(function(data) {
+            if (data.length === 0) {
+                document.getElementById('loading-text').innerText = '⚠️ 資料表是空的或無法讀取！';
+                return;
             }
+            
+            data.forEach(row => {
+                let dist = row['行政區'] || row['區名'] || row['district'] || '';
+                let vill = row['里別'] || row['里名'] || row['village'] || '';
+                
+                let x20_str = row['2020_藍綠催票差'];
+                let y22_str = row['2022_藍綠催票差'];
+                
+                if (x20_str !== undefined && y22_str !== undefined && x20_str !== '' && y22_str !== '') {
+                    globalData.push({
+                        time: '2020與2022年',
+                        district: dist,
+                        village: vill,
+                        x: parseFloat(x20_str.toString().replace('%', '')) || 0,
+                        y: parseFloat(y22_str.toString().replace('%', '')) || 0
+                    });
+                }
+
+                let x24_str = row['2024_藍綠催票差'];
+                let y26_str = row['2026_藍綠催票差'];
+                
+                if (x24_str !== undefined && y26_str !== undefined && x24_str !== '' && y26_str !== '') {
+                    globalData.push({
+                        time: '2024與2026年',
+                        district: dist,
+                        village: vill,
+                        x: parseFloat(x24_str.toString().replace('%', '')) || 0,
+                        y: parseFloat(y26_str.toString().replace('%', '')) || 0
+                    });
+                }
+            });
+
+            if (globalData.length === 0) {
+                 document.getElementById('loading-text').innerText = '⚠️ 找不到對應的欄位資料。請確認您的表格有 "2020_藍綠催票差" 等欄位名稱。';
+                 return;
+            }
+
+            let maxAbsolute = Math.max(...globalData.map(d => Math.max(Math.abs(d.x), Math.abs(d.y))));
+            if (maxAbsolute > 0 && maxAbsolute <= 1.2) {
+                globalData.forEach(d => {
+                    d.x = parseFloat((d.x * 100).toFixed(2));
+                    d.y = parseFloat((d.y * 100).toFixed(2));
+                });
+                maxAbsolute *= 100;
+            }
+
+            axisBound = Math.max(30, Math.ceil((maxAbsolute + 5) / 10) * 10);
+
+            document.getElementById('loading-text').style.display = 'none';
+            drawPlot(false);
+
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('loading-text').innerHTML = '⚠️ 資料載入失敗，請確認 Google Sheet 是否已開啟「共用連結」或發布。';
         });
 
-        function handleSearchInput() {
-            let query = document.getElementById('search-input').value.trim();
-            let box = document.getElementById('search-suggestions');
-            box.innerHTML = '';
+        // ==========================================
+        // 2. 繪圖核心與動畫函數
+        // ==========================================
+        function drawPlot(isAnimate = true) {
+            // 定義要顯示的行政區，確保順序固定
+            const targetDistricts = currentRegion === '台北市全區' ? districts : [currentRegion];
 
-            if (!query) {
-                box.style.display = 'none';
-                return;
-            }
+            // 取出當前選擇區域內的「所有獨特里名」，並進行排序
+            // 這是讓動畫不會亂跑的核心：確保每個陣列的長度與順序永遠一模一樣！
+            let uniqueVillages = [...new Set(globalData
+                .filter(d => currentRegion === '台北市全區' || d.district === currentRegion)
+                .map(d => d.village))].sort();
 
-            let matches = new Set();
-            globalGeoData.features.forEach(f => {
-                let town = f.properties.TOWNNAME;
-                let vill = f.properties.VILLNAME;
-                let full = town + vill;
+            let q1Count = 0, q2Count = 0, q3Count = 0, q4Count = 0;
 
-                if (town.includes(query)) matches.add(town);
-                if (vill.includes(query)) matches.add(vill);
-                if (full.includes(query)) matches.add(full);
-            });
+            let traces = targetDistricts.map(dist => {
+                let xArray = [];
+                let yArray = [];
+                let textArray = [];
 
-            if (matches.size === 0) {
-                box.style.display = 'none';
-                return;
-            }
-
-            box.style.display = 'block';
-            matches.forEach(match => {
-                let item = document.createElement('div');
-                item.className = 'suggestion-item';
-                item.innerHTML = match.replace(new RegExp(query, 'g'), `<strong>${query}</strong>`);
-                item.onclick = function () {
-                    document.getElementById('search-input').value = match;
-                    box.style.display = 'none';
-                    searchArea();
-                };
-                box.appendChild(item);
-            });
-        }
-
-        // 🌟 更新：無黨籍或小黨的顏色判斷改為深灰色 (#757575)
-        function getFillColor(status) {
-            let cleanStatus = status ? status.trim() : '';
-            
-            if (cleanStatus.includes('綠守住')) return '#2E7D32';
-            if (cleanStatus.includes('藍守住')) return '#1565C0';
-            if (cleanStatus.includes('綠翻盤')) return 'url(#pattern-green-flip)';
-            if (cleanStatus.includes('藍翻盤')) return 'url(#pattern-blue-flip)';
-            
-            // 只要標籤內不含藍綠，但有「守住」或「翻盤」即可觸發小黨專屬顏色(灰色)
-            if (cleanStatus.includes('守住')) return '#757575'; 
-            if (cleanStatus.includes('翻盤')) return 'url(#pattern-other-flip)';
-
-            return '#cccccc';
-        }
-
-        function updateInfoPanel(data, areaName) {
-            document.getElementById('info-name').innerText = areaName;
-
-            if (carouselInterval) clearInterval(carouselInterval);
-
-            if (!data) {
-                document.getElementById('vs-result-text').innerText = '-';
-                document.getElementById('info-status').innerText = '無資料';
-                document.getElementById('info-status').className = 'info-status bg-gray';
-
-                document.getElementById('photo-green').style.display = 'none';
-                document.getElementById('photo-blue').style.display = 'none';
-
-                document.getElementById('carousel-title').innerText = '等待資料...';
-                document.getElementById('carousel-green-votes').innerText = '0';
-                document.getElementById('carousel-blue-votes').innerText = '0';
-                document.getElementById('carousel-third-votes').innerText = '0';
-                document.getElementById('carousel-green-bar').style.width = '0%';
-                document.getElementById('carousel-blue-bar').style.width = '0%';
-                document.getElementById('carousel-third-bar').style.width = '0%';
-
-                document.getElementById('carousel-green-label').innerText = '綠營得票';
-                document.getElementById('carousel-blue-label').innerText = '藍營得票';
-                return;
-            }
-
-            let status = data['狀態標籤'] ? data['狀態標籤'].trim() : '';
-            let statusEl = document.getElementById('info-status');
-            statusEl.innerText = status || '無標籤';
-            
-            if (status.includes('綠')) {
-                statusEl.className = 'info-status bg-green';
-            } else if (status.includes('藍')) {
-                statusEl.className = 'info-status bg-blue';
-            } else if (status.includes('守住') || status.includes('翻盤')) {
-                // 套用第三勢力顏色
-                statusEl.className = 'info-status bg-other';
-            } else {
-                statusEl.className = 'info-status bg-gray';
-            }
-
-            let gVotesCurrStr = (data['民進黨＿沈伯洋＿得票'] || data['綠營得票數'] || data['民進黨得票數'] || '0').toString();
-            let bVotesCurrStr = (data['國民黨＿蔣萬安＿得票'] || data['藍營得票數'] || data['國民黨得票數'] || '0').toString();
-
-            let gVotesCurr = parseInt(gVotesCurrStr.replace(/[, ]/g, '')) || 0;
-            let bVotesCurr = parseInt(bVotesCurrStr.replace(/[, ]/g, '')) || 0;
-            let totalCurr = Math.max(1, gVotesCurr + bVotesCurr);
-            let diff = Math.abs(gVotesCurr - bVotesCurr);
-
-            let diffPct = totalCurr > 0 ? ((diff / totalCurr) * 100).toFixed(1) : 0;
-
-            let resultEl = document.getElementById('vs-result-text');
-            let photoGreen = document.getElementById('photo-green');
-            let photoBlue = document.getElementById('photo-blue');
-
-            if (gVotesCurr > bVotesCurr) {
-                resultEl.innerHTML = `沈伯洋贏<br>${diff.toLocaleString()} 票 <span style="font-size:15px;">(${diffPct}%)</span>`;
-                photoGreen.style.display = 'block';
-                photoBlue.style.display = 'none';
-            } else if (bVotesCurr > gVotesCurr) {
-                resultEl.innerHTML = `蔣萬安贏<br>${diff.toLocaleString()} 票 <span style="font-size:15px;">(${diffPct}%)</span>`;
-                photoGreen.style.display = 'none';
-                photoBlue.style.display = 'block';
-            } else {
-                resultEl.innerText = '雙方平手';
-                photoGreen.style.display = 'none';
-                photoBlue.style.display = 'none';
-            }
-
-            let baseSize = 130;
-            let targetSize = baseSize;
-
-            if (totalCurr > 0) {
-                let scaleMultiplier = 2.0; 
-                targetSize = baseSize + (diffPct * scaleMultiplier);
-            }
-
-            targetSize = Math.max(100, Math.min(targetSize, 200));
-
-            if (gVotesCurr > bVotesCurr) {
-                photoGreen.style.height = targetSize + 'px';
-            } else if (bVotesCurr > gVotesCurr) {
-                photoBlue.style.height = targetSize + 'px';
-            }
-
-            let gPrevStr = (data['2022民進黨得票數'] || data['2022民進黨得票'] || '0').toString();
-            let bPrevStr = (data['2022國民黨得票數'] || data['2022國民黨得票'] || '0').toString();
-
-            let tPrevStr = '0';
-            for (let key in data) {
-                if (key.includes('黃珊珊') || key.includes('民眾黨') || key.includes('無黨籍') || key.includes('第三')) {
-                    tPrevStr = data[key] ? data[key].toString() : '0';
-                    break;
-                }
-            }
-
-            let gVotesPrev = parseInt(gPrevStr.replace(/[, ]/g, '')) || 0;
-            let bVotesPrev = parseInt(bPrevStr.replace(/[, ]/g, '')) || 0;
-            let tVotesPrev = parseInt(tPrevStr.replace(/[, ]/g, '')) || 0;
-            
-            let totalPrev = Math.max(1, gVotesPrev + bVotesPrev + tVotesPrev);
-            
-            let gPctCurr = ((gVotesCurr / totalCurr) * 100).toFixed(1);
-            let bPctCurr = ((bVotesCurr / totalCurr) * 100).toFixed(1);
-            
-            let gDiff = ((gVotesCurr / totalCurr) * 100) - ((gVotesPrev / totalPrev) * 100);
-            let bDiff = ((bVotesCurr / totalCurr) * 100) - ((bVotesPrev / totalPrev) * 100);
-            
-            let gDiffStr = (gDiff >= 0 ? '+' : '') + gDiff.toFixed(1) + '%';
-            let bDiffStr = (bDiff >= 0 ? '+' : '') + bDiff.toFixed(1) + '%';
-
-            let globalMaxVotes = Math.max(gVotesCurr, bVotesCurr, gVotesPrev, bVotesPrev, tVotesPrev, 1);
-
-            let is2026 = true;
-
-            function renderCarousel() {
-                if (is2026) {
-                    document.getElementById('carousel-title').innerText = "2026年 本屆得票數";
-                    document.getElementById('carousel-green-label').innerText = "沈伯洋得票";
-                    document.getElementById('carousel-blue-label').innerText = "蔣萬安得票";
-
-                    document.getElementById('carousel-third-item').style.display = 'none';
-
-                    document.getElementById('carousel-green-votes').innerText = `${gVotesCurr.toLocaleString()} (得票率 ${gPctCurr}% | 較上屆 ${gDiffStr})`;
-                    document.getElementById('carousel-blue-votes').innerText = `${bVotesCurr.toLocaleString()} (得票率 ${bPctCurr}% | 較上屆 ${bDiffStr})`;
-
-                    document.getElementById('carousel-green-bar').style.width = (gVotesCurr / globalMaxVotes * 100) + '%';
-                    document.getElementById('carousel-blue-bar').style.width = (bVotesCurr / globalMaxVotes * 100) + '%';
-                } else {
-                    document.getElementById('carousel-title').innerText = "2022年 上屆得票數";
-                    document.getElementById('carousel-green-label').innerText = "陳時中得票";
-                    document.getElementById('carousel-blue-label').innerText = "蔣萬安得票";
-                    document.getElementById('carousel-third-label').innerText = "黃珊珊得票";
-
-                    document.getElementById('carousel-third-item').style.display = 'block';
-
-                    document.getElementById('carousel-green-votes').innerText = gVotesPrev.toLocaleString();
-                    document.getElementById('carousel-blue-votes').innerText = bVotesPrev.toLocaleString();
-                    document.getElementById('carousel-third-votes').innerText = tVotesPrev.toLocaleString();
-
-                    document.getElementById('carousel-green-bar').style.width = (gVotesPrev / globalMaxVotes * 100) + '%';
-                    document.getElementById('carousel-blue-bar').style.width = (bVotesPrev / globalMaxVotes * 100) + '%';
-                    document.getElementById('carousel-third-bar').style.width = (tVotesPrev / globalMaxVotes * 100) + '%';
-                }
-                is2026 = !is2026;
-            }
-
-            renderCarousel();
-            carouselInterval = setInterval(renderCarousel, 3500);
-        }
-
-        function resetMap() {
-            isPinned = false;
-            document.getElementById('btn-reset').style.display = 'none';
-            document.getElementById('search-input').value = '';
-            document.getElementById('search-suggestions').style.display = 'none';
-
-            d3.select("#map-group").transition().duration(750).attr("transform", "");
-            d3.selectAll(".district").classed("fade", false).classed("hover-active", false);
-
-            let totalData = globalSheetData.find(row => row['行政區'] === '全市');
-            updateInfoPanel(totalData, '台北市全市');
-        }
-
-        function pinAndZoom(d) {
-            isPinned = true;
-            document.getElementById('btn-reset').style.display = 'block';
-            document.getElementById('search-suggestions').style.display = 'none';
-
-            let currentTown = d.properties.TOWNNAME;
-            d3.selectAll(".district").classed("fade", true).classed("hover-active", false);
-
-            if (currentLevel === 'district') {
-                d3.selectAll(".district").filter(p => p.properties.TOWNNAME === currentTown).classed("fade", false).classed("hover-active", true);
-                updateInfoPanel(d.sheetData, currentTown);
-            } else {
-                d3.selectAll(".district").filter(p => p === d).classed("fade", false).classed("hover-active", true);
-                updateInfoPanel(d.sheetData, `${currentTown} ${d.properties.VILLNAME}`);
-            }
-
-            let bounds = pathGenerator.bounds(d);
-            let dx = bounds[1][0] - bounds[0][0];
-            let dy = bounds[1][1] - bounds[0][1];
-            let x = (bounds[0][0] + bounds[1][0]) / 2;
-            let y = (bounds[0][1] + bounds[1][1]) / 2;
-
-            let maxScale = currentLevel === 'district' ? 2.5 : 4.5;
-            let scale = Math.max(1, Math.min(maxScale, 0.9 / Math.max(dx / 700, dy / 500)));
-            let translate = [700 / 2 - scale * x, 500 / 2 - scale * y];
-
-            d3.select("#map-group").transition().duration(750)
-                .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
-        }
-
-        function searchArea() {
-            let query = document.getElementById('search-input').value.trim();
-            document.getElementById('search-suggestions').style.display = 'none';
-            if (!query) return;
-
-            let targetFeature = null;
-            let targetLevel = currentLevel;
-
-            let villageMatch = globalGeoData.features.find(f => f.properties.VILLNAME === query || (f.properties.TOWNNAME + f.properties.VILLNAME) === query);
-
-            if (villageMatch) {
-                targetFeature = villageMatch;
-                targetLevel = 'village';
-            } else {
-                let districtMatch = globalGeoData.features.find(f => f.properties.TOWNNAME === query);
-                if (districtMatch) {
-                    targetFeature = districtMatch;
-                    targetLevel = 'district';
-                }
-            }
-
-            if (!targetFeature) {
-                alert("找不到該區域，請輸入完整的區名或里名 (例如: 萬華區 或 榮德里)");
-                return;
-            }
-
-            if (currentLevel !== targetLevel) {
-                switchLevel(targetLevel);
-            }
-            pinAndZoom(targetFeature);
-        }
-
-        function handleEnter(event) {
-            if (event.key === 'Enter') {
-                searchArea();
-            }
-        }
-
-        function renderMap(level) {
-            resetMap();
-            const mapGroup = d3.select("#map-group");
-            mapGroup.selectAll("*").remove();
-
-            let projection = d3.geoIdentity().reflectY(true).fitSize([700, 500], globalGeoData);
-            pathGenerator = d3.geoPath().projection(projection);
-
-            mapGroup.selectAll("path")
-                .data(globalGeoData.features)
-                .enter()
-                .append("path")
-                .attr("d", pathGenerator)
-                .attr("class", "district")
-                .style("stroke-width", level === 'district' ? "0.1px" : "0.5px")
-                .style("stroke", level === 'district' ? "rgba(255,255,255,0.2)" : "#fff")
-                .attr("fill", function (d) {
-                    let districtName = d.properties.TOWNNAME;
-                    let villName = d.properties.VILLNAME;
-                    let data = globalSheetData.find(row => row['行政區']?.trim() === districtName && row['里別']?.trim() === (level === 'district' ? '全區' : villName));
-                    d.sheetData = data;
-                    return data ? getFillColor(data['狀態標籤']) : '#ccc';
-                })
-                .on("mouseover", function (event, d) {
-                    if (isPinned) return;
-
-                    let currentTown = d.properties.TOWNNAME;
-                    let currentVill = d.properties.VILLNAME;
-
-                    d3.selectAll(".district").classed("fade", true).classed("hover-active", false);
-
-                    if (level === 'district') {
-                        d3.selectAll(".district").filter(p => p.properties.TOWNNAME === currentTown).classed("fade", false).classed("hover-active", true);
-                        updateInfoPanel(d.sheetData, currentTown);
+                // 針對每個里去尋找對應時間的資料
+                uniqueVillages.filter(v => globalData.find(d => d.village === v && d.district === dist)).forEach(vill => {
+                    let point = globalData.find(d => d.time === currentTime && d.village === vill);
+                    if (point) {
+                        xArray.push(point.x);
+                        yArray.push(point.y);
+                        
+                        // 計算象限點數
+                        if (point.x >= 0 && point.y >= 0) q1Count++;
+                        else if (point.x < 0 && point.y >= 0) q2Count++;
+                        else if (point.x < 0 && point.y < 0) q3Count++;
+                        else if (point.x >= 0 && point.y < 0) q4Count++;
                     } else {
-                        d3.select(this).classed("fade", false).classed("hover-active", true);
-                        updateInfoPanel(d.sheetData, `${currentTown} ${currentVill}`);
+                        // 如果該時間沒有這個里的資料，就塞入 null (Plotly 會自動隱藏)，以保持陣列對齊
+                        xArray.push(null);
+                        yArray.push(null);
                     }
-                })
-                .on("mouseout", function (event, d) {
-                    if (isPinned) return;
-                    d3.selectAll(".district").classed("fade", false).classed("hover-active", false);
-                    let totalData = globalSheetData.find(row => row['行政區'] === '全市');
-                    updateInfoPanel(totalData, '台北市全市');
-                })
-                .on("click", function (event, d) {
-                    pinAndZoom(d);
+                    textArray.push(vill);
                 });
-        }
 
-        function switchLevel(level) {
-            if (currentLevel === level) return;
-            currentLevel = level;
-            document.getElementById('btn-district').classList.remove('active');
-            document.getElementById('btn-village').classList.remove('active');
-            document.getElementById(`btn-${level}`).classList.add('active');
-            renderMap(level);
-        }
-
-        function init() {
-            Promise.all([
-                d3.csv(GOOGLE_SHEET_CSV_URL + '&t=' + new Date().getTime()),
-                d3.json(TAIPEI_GEOJSON_URL)
-            ]).then(function ([sheetData, geoData]) {
-                globalSheetData = sheetData;
-                globalGeoData = geoData;
-                renderMap('district');
-            }).catch(function (error) {
-                console.error("❌ 讀取資料發生錯誤：", error);
+                return {
+                    x: xArray,
+                    y: yArray,
+                    text: textArray,
+                    mode: 'markers',
+                    name: dist,
+                    marker: { size: 9, opacity: 0.75, line: {width: 0.5, color: 'white'} },
+                    hovertemplate: '<b>%{text}</b><br>中央差距: %{x}%<br>地方差距: %{y}%<extra></extra>'
+                };
             });
+
+            let layout = {
+                hovermode: 'closest',
+                xaxis: { title: '中央層級 藍綠差距 (%)', range: [-axisBound, axisBound], zeroline: true, zerolinewidth: 2, zerolinecolor: '#aaa', gridcolor: '#eee' },
+                yaxis: { title: '地方層級 藍綠差距 (%)', range: [-axisBound, axisBound], zeroline: true, zerolinewidth: 2, zerolinecolor: '#aaa', gridcolor: '#eee' },
+                plot_bgcolor: 'white',
+                margin: { t: 30, b: 50, l: 50, r: 30 },
+                legend: { title: { text: '<b>行政區</b>' }, itemsizing: 'constant' },
+                annotations: [
+                    { x: axisBound * 0.7, y: axisBound * 0.7, text: `<b>${q1Count} 個里<br>基本盤偏藍、地方藍贏</b>`, showarrow: false, font: { color: "rgba(21, 101, 192, 0.4)", size: 18 } },
+                    { x: -axisBound * 0.7, y: -axisBound * 0.7, text: `<b>${q3Count} 個里<br>基本盤偏綠、地方綠贏</b>`, showarrow: false, font: { color: "rgba(46, 125, 50, 0.4)", size: 18 } },
+                    { x: -axisBound * 0.7, y: axisBound * 0.7, text: `<b>${q2Count} 個里<br>基本盤偏綠、地方藍贏</b>`, showarrow: false, font: { color: "rgba(150, 150, 150, 0.5)", size: 16 } },
+                    { x: axisBound * 0.7, y: -axisBound * 0.7, text: `<b>${q4Count} 個里<br>基本盤偏藍、地方綠贏</b>`, showarrow: false, font: { color: "rgba(150, 150, 150, 0.5)", size: 16 } }
+                ]
+            };
+
+            if (!isAnimate) {
+                // 初次載入或切換地區：直接重畫
+                Plotly.newPlot('plot-container', traces, layout, {responsive: true, displayModeBar: false});
+            } else {
+                // 切換時間：使用 Plotly 動畫引擎進行平移
+                Plotly.animate('plot-container', {
+                    data: traces,
+                    traces: traces.map((_, i) => i), // 更新所有的 traces
+                    layout: layout
+                }, {
+                    transition: {
+                        duration: 1000, // 動畫長度：1秒
+                        easing: 'cubic-in-out'
+                    },
+                    frame: {
+                        duration: 1000,
+                        redraw: false // 必須設為 false 點的移動才會滑順
+                    }
+                }).then(() => {
+                    // 動畫結束後，手動更新一次文字 (因為 redraw:false 不會更新文字標籤)
+                    Plotly.relayout('plot-container', { annotations: layout.annotations });
+                });
+            }
         }
 
-        init();
+        // ==========================================
+        // 3. 事件綁定 (UI 控制項連動)
+        // ==========================================
+        const timeBtns = document.querySelectorAll('#time-group .toggle-btn');
+        timeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if(this.classList.contains('active')) return; // 點擊當前選項不動作
+                
+                timeBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                currentTime = this.getAttribute('data-value');
+                // 傳入 true 觸發平移動畫
+                if(globalData.length > 0) drawPlot(true); 
+            });
+        });
+
+        const regionSelect = document.getElementById('region-select');
+        regionSelect.addEventListener('change', function() {
+            currentRegion = this.value;
+            // 切換地區時，資料點數量不同，強制重新渲染不使用動畫
+            if(globalData.length > 0) drawPlot(false); 
+        });
+
     </script>
 </body>
 
